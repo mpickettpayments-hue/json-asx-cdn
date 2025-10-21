@@ -1,0 +1,12 @@
+<!doctype html>
+<html>
+<body>
+<h1>JSON-ASX CDN</h1>
+<pre id="out"></pre>
+<script>
+fetch('./latest/os.json')
+  .then(r => r.json())
+  .then(j => { document.getElementById('out').textContent = JSON.stringify(j, null, 2); });
+</script>
+</body>
+</html>
