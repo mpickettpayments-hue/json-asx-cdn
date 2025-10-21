@@ -1,27 +1,64 @@
 {
   "hero": {
     "title": "Welcome to XJSON",
-    "subtitle": "Steam + Xbox style launcher powered entirely by JSON."
+    "subtitle": "Build games with JSON. Launch anything."
   },
+  "apps": [
+    {
+      "id": "starter-clicker",
+      "title": "Starter Clicker",
+      "tag": "JSON Game",
+      "type": "json",
+      "art": "https://picsum.photos/seed/clicker/640/360",
+      "spec": {
+        "state": { "score": 0 },
+        "scene": [
+          { "type": "text", "value": "Score: ${state.score}" },
+          { "type": "row", "children": [
+            { "type": "button", "label": "Tap +1", "action": "set(score, 1+${state.score})" },
+            { "type": "button", "label": "Reset", "action": "set(score, 0)" }
+          ] }
+        ]
+      }
+    },
+    {
+      "id": "runner-mock",
+      "title": "Runner Mock",
+      "tag": "JSON Game",
+      "type": "json",
+      "art": "https://picsum.photos/seed/runner/640/360",
+      "spec": {
+        "state": { "lives": 3 },
+        "scene": [
+          { "type": "text", "value": "Lives: ${state.lives}" },
+          { "type": "button", "label": "Hit", "action": "set(lives, ${state.lives}-1)" },
+          { "type": "image", "src": "https://picsum.photos/seed/runner-art/800/400" }
+        ]
+      }
+    },
+    {
+      "id": "web-leaderboard",
+      "title": "Web Leaderboard",
+      "tag": "Iframe App",
+      "type": "iframe",
+      "art": "https://picsum.photos/seed/leader/640/360",
+      "src": "https://example.com" 
+    }
+  ],
   "featured": [
-    { "title": "Nebula Racer", "tag": "Action", "art": "https://picsum.photos/seed/nebula/640/360" },
-    { "title": "Tower of Bits", "tag": "Rogue-lite", "art": "https://picsum.photos/seed/tower/640/360" },
-    { "title": "DeFi Manager", "tag": "Utility", "art": "https://picsum.photos/seed/defi/640/360" }
+    { "id": "starter-clicker", "title": "Starter Clicker", "tag": "JSON Game", "art": "https://picsum.photos/seed/clicker/640/360" },
+    { "id": "runner-mock", "title": "Runner Mock", "tag": "JSON Game", "art": "https://picsum.photos/seed/runner/640/360" }
   ],
   "nowPlaying": [
-    { "title": "Pixel Drift", "tag": "Racing", "art": "https://picsum.photos/seed/drift/640/360" }
+    { "id": "starter-clicker", "title": "Starter Clicker", "tag": "JSON Game", "art": "https://picsum.photos/seed/clicker2/640/360" }
   ],
   "library": [
-    { "title": "Pixel Drift", "tag": "Racing", "art": "https://picsum.photos/seed/lib1/640/360" },
-    { "title": "Chain Tycoon", "tag": "Sim", "art": "https://picsum.photos/seed/lib2/640/360" },
-    { "title": "Voxel Quest", "tag": "RPG", "art": "https://picsum.photos/seed/lib3/640/360" },
-    { "title": "Term Grid", "tag": "Puzzle", "art": "https://picsum.photos/seed/lib4/640/360" },
-    { "title": "Scene Maker", "tag": "Creator", "art": "https://picsum.photos/seed/lib5/640/360" }
+    { "id": "starter-clicker", "title": "Starter Clicker", "tag": "JSON Game", "art": "https://picsum.photos/seed/lib1/640/360" },
+    { "id": "runner-mock", "title": "Runner Mock", "tag": "JSON Game", "art": "https://picsum.photos/seed/lib2/640/360" }
   ],
   "store": [
-    { "title": "Nebula Racer", "tag": "Action", "art": "https://picsum.photos/seed/store1/640/360" },
-    { "title": "Synth City", "tag": "Indie", "art": "https://picsum.photos/seed/store2/640/360" },
-    { "title": "Voxel Quest", "tag": "RPG", "art": "https://picsum.photos/seed/store3/640/360" },
-    { "title": "DeFi Manager", "tag": "Utility", "art": "https://picsum.photos/seed/store4/640/360" }
+    { "id": "starter-clicker", "title": "Starter Clicker", "tag": "JSON Game", "art": "https://picsum.photos/seed/store1/640/360" },
+    { "id": "runner-mock", "title": "Runner Mock", "tag": "JSON Game", "art": "https://picsum.photos/seed/store2/640/360" },
+    { "id": "web-leaderboard", "title": "Web Leaderboard", "tag": "Iframe App", "art": "https://picsum.photos/seed/store3/640/360" }
   ]
 }
