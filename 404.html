@@ -2,14 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"/>
-  <title>Page not found — redirecting…</title>
+  <title>Redirecting…</title>
   <script>
-    // capture the pathname and store for router
-    const path = location.pathname;
-    // store path in sessionStorage
-    sessionStorage.setItem('xjson-route', path);
-    // redirect to index.html
-    location.replace('./index.html');
+    sessionStorage.setItem('xjson-route', location.pathname);
+    location.replace('/json-asx-cdn/index.html');
   </script>
 </head>
 <body>
