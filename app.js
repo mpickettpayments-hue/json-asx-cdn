@@ -1,4 +1,3 @@
-const BASE = "/json-asx-cdn";
 const CDN = "https://mpickettpayments-hue.github.io/json-asx-cdn";
 let channel = "latest";
 let os;
@@ -7,13 +6,19 @@ const mainEl = document.getElementById("main");
 const navButtons = [...document.querySelectorAll(".nav button")];
 const chips = [...document.querySelectorAll(".chip")];
 
-function goto(route) {
-  window.history.pushState({}, "", BASE + route);
-  render(route);
+function internalRoute() {
+  const saved = sessionStorage.getItem("xjson-route");
+  if (saved) {
+    sessionStorage.removeItem("xjson-route");
+    return saved.replace("/json-asx-cdn", "");
+  }
+  return location.pathname.replace("/json-asx-cdn", "") || "/";
 }
 
-function setRoute(route) {
-  goto(route);
+function goto(route) {
+  if (!route.endsWith("/")) route = route + "/";
+  history.pushState({}, "", route);
+  render(route);
 }
 
 function setChannel(ch) {
@@ -31,16 +36,7 @@ async function boot() {
     mainEl.innerHTML = `<div class="muted">Unable to fetch OS config.</div>`;
     return;
   }
-
-  const saved = sessionStorage.getItem("xjson-route");
-  let path = saved || location.pathname.replace(BASE, "") || "/";
-  sessionStorage.removeItem("xjson-route");
-
-  if (path === "" || path === "/") {
-    render("/");
-  } else {
-    render(path);
-  }
+  render(internalRoute());
 }
 
 function tile(item) {
@@ -85,9 +81,12 @@ function hero() {
 }
 
 function render(path) {
-  navButtons.forEach(b => {
-    b.classList.toggle("active", b.dataset.route === path);
-  });
+  // Ensure trailing slash
+  if (!path.endsWith("/")) path = path + "/";
+
+  navButtons.forEach(b =>
+    b.classList.toggle("active", b.dataset.route + "/" === path)
+  );
 
   const q = document.getElementById("q").value.toLowerCase();
   let html = "";
@@ -97,18 +96,16 @@ function render(path) {
     html += section("Featured", grid(os.featured));
     html += section("Library", grid(os.library.slice(0, 6)));
   }
-  else if (path === "/store") {
-    const list = os.store.filter(i => i.title.toLowerCase().includes(q));
-    html += section("Store", grid(list));
+  else if (path === "/store/") {
+    html += section("Store", grid(os.store.filter(i => i.title.toLowerCase().includes(q))));
   }
-  else if (path === "/library") {
-    const list = os.library.filter(i => i.title.toLowerCase().includes(q));
-    html += section("Library", grid(list));
+  else if (path === "/library/") {
+    html += section("Library", grid(os.library.filter(i => i.title.toLowerCase().includes(q))));
   }
-  else if (path === "/downloads") {
+  else if (path === "/downloads/") {
     html += section("Downloads", `<div class="muted">No active downloads yet.</div>`);
   }
-  else if (path === "/settings") {
+  else if (path === "/settings/") {
     html += section("Settings", `
       <div class="muted small">Channel: <strong>${channel}</strong></div>
       <div style="margin-top:10px"><button class="btn" id="clear">Clear cache</button></div>
@@ -139,9 +136,8 @@ chips.forEach(c =>
 
 document.getElementById("refresh").onclick = boot;
 
-window.addEventListener("popstate", () => {
-  const clean = location.pathname.replace(BASE, "") || "/";
-  render(clean);
-});
+window.addEventListener("popstate", () =>
+  render(internalRoute())
+);
 
 boot();
