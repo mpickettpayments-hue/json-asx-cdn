@@ -33,7 +33,7 @@
     .main{grid-area:main;overflow:auto;padding:22px 22px}
     .section{margin-bottom:26px}
     .hero{display:grid;grid-template-columns:2fr 1fr;gap:16px}
-    .card{background:var(--tile2);border:1px solid #172231;border-radius:var(--radius);padding:16px}
+    .card{background:var(--tile2);border:1px solid #172231;border-radius:var(--ratio,14px);padding:16px}
     .card h3{margin:0 0 8px 0}
     .tilegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
     .tile{background:var(--tile);border:1px solid #172231;border-radius:12px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column}
@@ -70,7 +70,7 @@
     <header class="header">
       <div class="search"><input id="q" placeholder="Search library or store…" /></div>
       <div class="actions">
-        <button id="install" class="btn">Install app</button>
+        <button id="install" class="btn">Install</button>
         <button id="refresh" class="btn">Refresh</button>
       </div>
     </header>
