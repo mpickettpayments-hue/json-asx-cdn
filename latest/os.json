@@ -1,1 +1,27 @@
-{ "meta": { "id": "json-asx", "version": "1.0.0" } }
+{
+  "hero": {
+    "title": "Welcome to XJSON",
+    "subtitle": "Steam + Xbox style launcher powered entirely by JSON."
+  },
+  "featured": [
+    { "title": "Nebula Racer", "tag": "Action", "art": "https://picsum.photos/seed/nebula/640/360" },
+    { "title": "Tower of Bits", "tag": "Rogue-lite", "art": "https://picsum.photos/seed/tower/640/360" },
+    { "title": "DeFi Manager", "tag": "Utility", "art": "https://picsum.photos/seed/defi/640/360" }
+  ],
+  "nowPlaying": [
+    { "title": "Pixel Drift", "tag": "Racing", "art": "https://picsum.photos/seed/drift/640/360" }
+  ],
+  "library": [
+    { "title": "Pixel Drift", "tag": "Racing", "art": "https://picsum.photos/seed/lib1/640/360" },
+    { "title": "Chain Tycoon", "tag": "Sim", "art": "https://picsum.photos/seed/lib2/640/360" },
+    { "title": "Voxel Quest", "tag": "RPG", "art": "https://picsum.photos/seed/lib3/640/360" },
+    { "title": "Term Grid", "tag": "Puzzle", "art": "https://picsum.photos/seed/lib4/640/360" },
+    { "title": "Scene Maker", "tag": "Creator", "art": "https://picsum.photos/seed/lib5/640/360" }
+  ],
+  "store": [
+    { "title": "Nebula Racer", "tag": "Action", "art": "https://picsum.photos/seed/store1/640/360" },
+    { "title": "Synth City", "tag": "Indie", "art": "https://picsum.photos/seed/store2/640/360" },
+    { "title": "Voxel Quest", "tag": "RPG", "art": "https://picsum.photos/seed/store3/640/360" },
+    { "title": "DeFi Manager", "tag": "Utility", "art": "https://picsum.photos/seed/store4/640/360" }
+  ]
+}
