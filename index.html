@@ -152,5 +152,41 @@
   </div>
 
   <script type="module" src="./app.js"></script>
+  <!-- before closing body, load modules -->
+<script type="module">
+  import { initGoogleSignIn } from './auth.js';
+  import { ensureUserProvisioned } from './provision.js';
+  import { publishAppJson } from './publish.js';
+
+  // PAT storage (admin enters once; safe MVP: scope it to this single repo)
+  const patEl = document.getElementById('pat');
+  const savePat = document.getElementById('savePat');
+  patEl.value = localStorage.getItem('xjson.admin.pat') || '';
+  savePat.onclick = () => {
+    localStorage.setItem('xjson.admin.pat', patEl.value.trim());
+    alert('Saved admin PAT locally.');
+  };
+
+  // Sign-in → provision (first time only)
+  initGoogleSignIn({
+    buttonId: 'googleBtn',
+    onSignedIn: async ({ email, uid }) => {
+      const token = localStorage.getItem('xjson.admin.pat') || '';
+      if (!token) { alert('Admin PAT required to auto-provision users. Paste it and Save first.'); return; }
+
+      try {
+        const r = await ensureUserProvisioned(uid, token);
+        alert(r.created ? `Provisioned ${uid}.` : `Welcome back ${uid}.`);
+        // Optional: publish the current Builder app as new
+        // Example: publish starter-clicker under user space
+        // const spec = { state:{score:0}, scene:[...] };
+        // await publishAppJson({ uid, appId: 'starter', spec, token });
+        // window.open(`https://${uid}.xjson.app/`, '_blank');
+      } catch (e) {
+        alert('Provision error: ' + e.message);
+      }
+    }
+  });
+</script>
 </body>
 </html>
