@@ -105,6 +105,26 @@
       </div>
     </div>
   </div>
+<script type="module">
+  import { initGoogleSignIn } from './auth.js';
+  import { ensureUserProvisioned } from './provision.js';
+  import { redirectToUserDomain } from './router-tools.js';
+
+  const pat = () => localStorage.getItem('xjson.admin.pat') || '';
+
+  initGoogleSignIn({
+    buttonId: 'googleBtn',
+    onSignedIn: async ({ uid, email }) => {
+      if (!pat()) { alert('Admin PAT required (Settings) before provisioning.'); return; }
+      try {
+        await ensureUserProvisioned(uid, pat(), email);
+        redirectToUserDomain(uid);             // R1 behavior
+      } catch (e) {
+        alert('Provisioning failed: ' + e.message);
+      }
+    }
+  });
+</script>
 
   <script type="module" src="./app.js"></script>
   <script>
