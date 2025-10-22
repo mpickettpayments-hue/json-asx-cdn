@@ -8,7 +8,7 @@
   "tag": "JSON-2D",
   "type": "json",
   "art": "@cdn/public/td-track.png",
-  "spec": { "$ref": "@cdn/games/tower-defense/app.json" }
+  "spec": { "$ref": "@cdn/apps/tower-defense/app.json" }
 },
     {
       "id": "runner-mock",
