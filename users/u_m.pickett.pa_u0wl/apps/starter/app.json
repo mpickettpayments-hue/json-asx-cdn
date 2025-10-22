@@ -1,0 +1,26 @@
+{
+  "state": {
+    "score": 0
+  },
+  "scene": [
+    {
+      "type": "text",
+      "value": "Score: ${state.score}"
+    },
+    {
+      "type": "row",
+      "children": [
+        {
+          "type": "button",
+          "label": "Tap +1",
+          "action": "set(score, ${state.score}+1)"
+        },
+        {
+          "type": "button",
+          "label": "Reset",
+          "action": "set(score, 0)"
+        }
+      ]
+    }
+  ]
+}
