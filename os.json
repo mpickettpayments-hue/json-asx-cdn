@@ -1,4 +1,9 @@
 {
+  "meta": {
+    "id": "xjson-os",
+    "version": "1.0.0",
+    "channel": "latest"
+  },
   "hero": {
     "title": "Welcome to XJSON",
     "subtitle": "Build games with JSON. Launch anything."
@@ -14,10 +19,13 @@
         "state": { "score": 0 },
         "scene": [
           { "type": "text", "value": "Score: ${state.score}" },
-          { "type": "row", "children": [
-            { "type": "button", "label": "Tap +1", "action": "set(score, 1+${state.score})" },
-            { "type": "button", "label": "Reset", "action": "set(score, 0)" }
-          ] }
+          {
+            "type": "row",
+            "children": [
+              { "type": "button", "label": "Tap +1", "action": "set(score, 1+${state.score})" },
+              { "type": "button", "label": "Reset", "action": "set(score, 0)" }
+            ]
+          }
         ]
       }
     },
@@ -42,7 +50,7 @@
       "tag": "Iframe App",
       "type": "iframe",
       "art": "https://picsum.photos/seed/leader/640/360",
-      "src": "https://example.com" 
+      "src": "https://example.com"
     }
   ],
   "featured": [
