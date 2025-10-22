@@ -1,0 +1,36 @@
+{
+  "id": "tower-defense",
+  "title": "XJSON Tower Defense",
+  "type": "json",
+  "engine": "json-2d",
+  "@game": {
+    "@map": {
+      "background": "@cdn/public/td-track.png",
+      "size": { "w": 768, "h": 768 },
+      "path": [
+        [80, 500], [120, 500], [200, 500], [260, 470], [360, 420],
+        [460, 420], [540, 470], [620, 540], [620, 620], [540, 680],
+        [460, 700], [360, 700], [280, 640], [220, 560], [180, 520]
+      ],
+      "spots": [
+        { "id": "s1", "x": 210, "y": 610 },
+        { "id": "s2", "x": 300, "y": 450 },
+        { "id": "s3", "x": 480, "y": 460 },
+        { "id": "s4", "x": 620, "y": 600 }
+      ]
+    },
+    "@hud": [
+      { "type": "badge", "label": "Gold", "bind": "gold" },
+      { "type": "badge", "label": "HP",   "bind": "hp"   },
+      { "type": "badge", "label": "Wave", "bind": "wave" }
+    ],
+    "@npc": [
+      { "kind": "creep", "hp": 10, "speed": 60 }
+    ],
+    "@scene": {
+      "ui": [
+        { "type": "button", "label": "Start Wave", "action": "waves.start" }
+      ]
+    }
+  }
+}
