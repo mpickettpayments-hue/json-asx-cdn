@@ -1,0 +1,49 @@
+<!-- user-guide.html — U2 Professional tone -->
+<h1>User Guide</h1>
+<p>Welcome to <strong>XJSON</strong>, a creator-first OS where apps are described in JSON. This guide covers the core flow: explore, edit, preview, and publish.</p>
+
+<h2>1. Explore the OS</h2>
+<ul>
+  <li><strong>Home</strong>: Featured apps and quick actions.</li>
+  <li><strong>Store</strong>: Browse installable examples and templates.</li>
+  <li><strong>Library</strong>: Your installed or remixed apps.</li>
+  <li><strong>Downloads</strong>: (coming soon) Queue for packaged assets.</li>
+  <li><strong>Settings</strong>: Configure Admin PAT and LangFlow endpoint.</li>
+</ul>
+
+<h2>2. Channels</h2>
+<p>Switch between <em>latest</em>, <em>stable</em>, and <em>nightly</em> datasets using the top-left chips. This controls which OS dataset is loaded.</p>
+
+<h2>3. Edit in the Fullscreen Editor</h2>
+<ol>
+  <li>Open the <strong>Editor</strong> (sidebar &rarr; code icon or Home &rarr; Open Editor).</li>
+  <li>Select a JSON app from the dropdown.</li>
+  <li>Modify the JSON in the <strong>Editor</strong> tab.</li>
+  <li>Switch to <strong>Preview</strong> to see live changes (auto-refresh).</li>
+</ol>
+
+<h2>4. Publish to Your Subdomain</h2>
+<ol>
+  <li>Go to <strong>Settings</strong> and paste a repo-scoped <strong>GitHub PAT</strong> (Contents: Read/Write).</li>
+  <li>Open the <strong>Editor</strong>, choose the app, click <strong>Publish</strong>.</li>
+  <li>Apps publish to <code>/users/&lt;uid&gt;/apps/&lt;id&gt;/app.json</code>, and your subdomain is <code>https://&lt;uid&gt;.xjson.app/</code>.</li>
+</ol>
+
+<h2>5. Provisioning</h2>
+<p>On first sign-in (main domain), the OS can provision your vault and starter app. It creates:</p>
+<pre><code>/users/&lt;uid&gt;/
+  manifest.json, profile.json, library.json, ledger.json, vault.json
+  apps/starter/app.json
+</code></pre>
+
+<h2>6. AI (Coming Soon)</h2>
+<p>The Editor includes a placeholder AI tab for LangFlow-based agents that will scaffold scenes, propose remixes, and write files into your app tree when authorized.</p>
+
+<h2>7. Troubleshooting</h2>
+<ul>
+  <li>Use the <strong>Debug</strong> button in the top bar to see fetches and errors in real-time.</li>
+  <li>If a channel does not load, check that <code>./latest/os.json</code> (or stable/nightly) exists and is valid JSON.</li>
+  <li>Hard refresh (<kbd>Ctrl/Cmd</kbd> + <kbd>F5</kbd>) to bypass caches.</li>
+</ul>
+
+<p>That’s it! Build boldly. If you need deeper templates, XP/badges, or AI bots, they’re next on the roadmap.</p>
