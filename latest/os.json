@@ -1,27 +1,73 @@
 {
+  "meta": { "id": "xjson-os", "version": "1.0.0", "channel": "latest" },
   "hero": {
-    "title": "Welcome to XJSON",
-    "subtitle": "Steam + Xbox style launcher powered entirely by JSON."
+    "title": "Play. Build. Publish.",
+    "subtitle": "Launch JSON apps, edit live with AI, and ship to your uid.xjson.app"
   },
+
   "featured": [
-    { "title": "Nebula Racer", "tag": "Action", "art": "https://picsum.photos/seed/nebula/640/360" },
-    { "title": "Tower of Bits", "tag": "Rogue-lite", "art": "https://picsum.photos/seed/tower/640/360" },
-    { "title": "DeFi Manager", "tag": "Utility", "art": "https://picsum.photos/seed/defi/640/360" }
+    { "id": "starter", "title": "Starter Clicker", "tag": "example", "art": "https://picsum.photos/seed/xjson1/640/360" },
+    { "id": "gallery-demo", "title": "Gallery Demo", "tag": "example", "art": "https://picsum.photos/seed/xjson2/640/360" },
+    { "id": "web-embed", "title": "Web Embed", "tag": "iframe", "art": "https://picsum.photos/seed/xjson3/640/360" }
   ],
-  "nowPlaying": [
-    { "title": "Pixel Drift", "tag": "Racing", "art": "https://picsum.photos/seed/drift/640/360" }
-  ],
-  "library": [
-    { "title": "Pixel Drift", "tag": "Racing", "art": "https://picsum.photos/seed/lib1/640/360" },
-    { "title": "Chain Tycoon", "tag": "Sim", "art": "https://picsum.photos/seed/lib2/640/360" },
-    { "title": "Voxel Quest", "tag": "RPG", "art": "https://picsum.photos/seed/lib3/640/360" },
-    { "title": "Term Grid", "tag": "Puzzle", "art": "https://picsum.photos/seed/lib4/640/360" },
-    { "title": "Scene Maker", "tag": "Creator", "art": "https://picsum.photos/seed/lib5/640/360" }
-  ],
+
   "store": [
-    { "title": "Nebula Racer", "tag": "Action", "art": "https://picsum.photos/seed/store1/640/360" },
-    { "title": "Synth City", "tag": "Indie", "art": "https://picsum.photos/seed/store2/640/360" },
-    { "title": "Voxel Quest", "tag": "RPG", "art": "https://picsum.photos/seed/store3/640/360" },
-    { "title": "DeFi Manager", "tag": "Utility", "art": "https://picsum.photos/seed/store4/640/360" }
+    { "id": "starter", "title": "Starter Clicker", "tag": "free", "art": "https://picsum.photos/seed/xjson4/640/360" },
+    { "id": "gallery-demo", "title": "Gallery Demo", "tag": "free", "art": "https://picsum.photos/seed/xjson5/640/360" },
+    { "id": "web-embed", "title": "Web Embed", "tag": "free", "art": "https://picsum.photos/seed/xjson6/640/360" }
+  ],
+
+  "library": [
+    { "id": "starter", "title": "Starter Clicker", "tag": "installed", "art": "https://picsum.photos/seed/xjson7/640/360" },
+    { "id": "gallery-demo", "title": "Gallery Demo", "tag": "installed", "art": "https://picsum.photos/seed/xjson8/640/360" }
+  ],
+
+  "nowPlaying": [
+    { "id": "starter", "title": "Starter Clicker", "tag": "resume", "art": "https://picsum.photos/seed/xjson9/640/360" }
+  ],
+
+  "apps": [
+    {
+      "id": "starter",
+      "title": "Starter Clicker",
+      "type": "json",
+      "spec": {
+        "state": { "score": 0 },
+        "scene": [
+          { "type": "text", "value": "Score: ${state.score}" },
+          {
+            "type": "row",
+            "children": [
+              { "type": "button", "label": "Tap +1", "action": "set(score, ${state.score}+1)" },
+              { "type": "button", "label": "Reset",  "action": "set(score, 0)" }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "gallery-demo",
+      "title": "Gallery Demo",
+      "type": "json",
+      "spec": {
+        "state": {},
+        "scene": [
+          { "type": "text", "value": "Welcome to Gallery Demo" },
+          {
+            "type": "row",
+            "children": [
+              { "type": "image", "src": "https://picsum.photos/seed/gal1/800/400" },
+              { "type": "image", "src": "https://picsum.photos/seed/gal2/800/400" }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "web-embed",
+      "title": "Web Embed",
+      "type": "iframe",
+      "src": "https://example.com"
+    }
   ]
 }
