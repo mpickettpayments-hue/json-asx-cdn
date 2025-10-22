@@ -1,65 +1,51 @@
-// app.js — C (relative CDN), F2 hard-fail, TB2 topbar, D1 debug overlay.
+// app.js — Adds /editor/ (E2-A tabs: Editor/Preview/AI), /guide/, PV1 full-page preview,
+// keeps C (relative CDN), F2 strict loader, TB2, D1 debug overlay.
+
 import { publishAppJson } from './publish.js';
 
-const CDN = ".";                   // ← self-contained
+const CDN = ".";
 const MAIN_HOST = "xjson.app";
 const USERS_BASE = `${CDN}/users`;
 
 let channel = "latest";
 let os;
 
-// DOM
+// DOM refs
 const mainEl = document.getElementById('main');
 const chips = [...document.querySelectorAll('.chip')];
 const qEl = document.getElementById('q');
 const navBtns = [...document.querySelectorAll('.nav-btn')];
-const openBuilderBtn = document.getElementById('openBuilder');
-const builder = document.getElementById('builder');
-const closeBuilder = document.getElementById('closeBuilder');
-const tabs = [...document.querySelectorAll('.tab')];
-const editorPanel = document.querySelector('[data-tab-panel="editor"]');
-const aiPanel = document.querySelector('[data-tab-panel="ai"]');
-const builderTarget = document.getElementById('builderTarget');
-const appJsonEl = document.getElementById('appJson');
-const saveAppBtn = document.getElementById('saveApp');
-const publishBtn = document.getElementById('publishBtn');
-const chatInput = document.getElementById('chatInput');
-const chatSend = document.getElementById('chatSend');
-const chatLog = document.getElementById('chatLog');
-const langflowUrl = document.getElementById('langflowUrl');
 
-// Debug DOM
 const debugBtn = document.getElementById('debugBtn');
 const debugPanel = document.getElementById('debugPanel');
 const closeDebug = document.getElementById('closeDebug');
-const errorTable = document.getElementById('errorTable').querySelector('tbody');
+const errorTable = document.getElementById('errorTable')?.querySelector('tbody');
 const osMetaPre = document.getElementById('osMeta');
 const lastFetchPre = document.getElementById('lastFetch');
 
-// FS offer
 const fsOffer = document.getElementById('fsOffer');
 const fsGo = document.getElementById('fsGo');
 const fsDismiss = document.getElementById('fsDismiss');
 
-// Utils
+// utils
 const ensureSlash = p => (p.endsWith('/') ? p : p + '/');
 const isSubdomain = () => location.hostname.endsWith('.' + MAIN_HOST) && location.hostname !== MAIN_HOST;
 const subdomainUid = () => (isSubdomain() ? location.hostname.split('.')[0] : null);
 function escapeHTML(s){ return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function debounce(fn, ms=250){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), ms); }; }
 
-// OBD-style error feed
-const ERR = [];
+// error feed
 function pushErr(type, msg, src){
+  if (!errorTable) return;
   const row = document.createElement('tr');
   const t = new Date().toLocaleTimeString();
   row.innerHTML = `<td>${t}</td><td>${escapeHTML(type)}</td><td>${escapeHTML(msg)}</td><td>${escapeHTML(src||'')}</td>`;
   errorTable.prepend(row);
-  ERR.push({ t, type, msg, src });
 }
 window.addEventListener('error', (e)=> pushErr('error', e.message, e.filename||'' ));
 window.addEventListener('unhandledrejection', (e)=> pushErr('unhandledrejection', String(e.reason||'promise'), '' ));
 
-// Minimal JSON runtime
+// minimal JSON runtime
 function renderJsonApp(mount, spec) {
   if (!mount) return;
   const state = { ...(spec.state||{}) };
@@ -95,16 +81,17 @@ function renderJsonApp(mount, spec) {
   }
 }
 window.applySpec = function(spec){
-  appJsonEl.value = JSON.stringify(spec, null, 2);
-  const wrap = document.createElement('div');
-  wrap.className = 'card';
-  wrap.innerHTML = `<h3 class="h3">Preview</h3><div id="jsonAppMount"></div>`;
-  mainEl.innerHTML = ''; mainEl.appendChild(wrap);
-  try{ renderJsonApp(document.getElementById('jsonAppMount'), spec); }
-  catch(e){ pushErr('applySpec', e.message, 'applySpec'); }
+  // used by AI later — for now editor handles updates
+  try{
+    const wrap = document.createElement('div');
+    wrap.className = 'card';
+    wrap.innerHTML = `<h3 class="h3">Preview</h3><div id="jsonAppMount"></div>`;
+    mainEl.innerHTML = ''; mainEl.appendChild(wrap);
+    renderJsonApp(document.getElementById('jsonAppMount'), spec);
+  }catch(e){ pushErr('applySpec', e.message, 'applySpec'); alert('Invalid JSON'); }
 };
 
-// Routing
+// routing
 function goto(route){ route = ensureSlash(route); history.pushState({},'',route); render(route); }
 window.addEventListener('popstate', ()=> { if (!isSubdomain()) render(location.pathname); });
 
@@ -119,7 +106,10 @@ function hero(){
   const h = os.hero || { title:'Welcome to XJSON', subtitle:'Build games with JSON. Launch anything.' };
   return `<div class="section"><div class="card"><h3 class="h3">${h.title}</h3><div class="small muted">${h.subtitle}</div>
   <div style="margin-top:10px"><button class="btn" onclick="(${goto}).call(null,'/store/')">Browse Store</button>
-  <button class="btn" onclick="(${goto}).call(null,'/library/')">Open Library</button></div></div></div>`;
+  <button class="btn" onclick="(${goto}).call(null,'/library/')">Open Library</button>
+  <button class="btn" onclick="(${goto}).call(null,'/editor/')">Open Editor</button>
+  <button class="btn" onclick="(${goto}).call(null,'/guide/')">User Guide</button>
+  </div></div></div>`;
 }
 
 function render(pathname){
@@ -132,15 +122,19 @@ function render(pathname){
     html += hero();
     html += section('Featured', grid(os.featured, i=>`launch('${i.id||i.title}')`));
     html += section('Library', grid((os.library||[]).filter(i=>i.title.toLowerCase().includes(q)).slice(0,8), i=>`launch('${i.id||i.title}')`));
-  } else if (path==='/store/'){
+  }
+  else if (path==='/store/'){
     const list = (os.store||[]).filter(i=>i.title.toLowerCase().includes(q));
     html += section('Store', grid(list, i=>`launch('${i.id||i.title}')`));
-  } else if (path==='/library/'){
+  }
+  else if (path==='/library/'){
     const list = (os.library||[]).filter(i=>i.title.toLowerCase().includes(q));
     html += section('Library', grid(list, i=>`launch('${i.id||i.title}')`));
-  } else if (path==='/downloads/'){
+  }
+  else if (path==='/downloads/'){
     html += section('Downloads', `<div class="small muted">No active downloads yet.</div>`);
-  } else if (path==='/settings/'){
+  }
+  else if (path==='/settings/'){
     const savedPat = localStorage.getItem('xjson.admin.pat')||'';
     const savedLF = localStorage.getItem('xjson.langflow')||'';
     html += section('Settings', `
@@ -158,20 +152,121 @@ function render(pathname){
       const lf = document.getElementById('cfgLangflow');
       document.getElementById('saveLF').onclick = ()=>{
         localStorage.setItem('xjson.langflow', lf.value.trim());
-        langflowUrl.value = lf.value.trim(); alert('LangFlow saved.');
+        alert('LangFlow saved.');
       };
       document.getElementById('clearCache').onclick = async ()=>{
         const keys = await caches.keys(); await Promise.all(keys.map(k=>caches.delete(k)));
         alert('Cache cleared. Reloading.'); location.reload();
       };
     },0);
-  } else {
+  }
+  else if (path==='/guide/'){
+    html += `<div class="card"><div id="guideHost" class="doc"></div></div>`;
+    mainEl.innerHTML = html;
+    fetch('./user-guide.html', {cache:'no-store'}).then(r=>r.text()).then(t=>{ document.getElementById('guideHost').innerHTML = t; }).catch(e=>{
+      mainEl.innerHTML = section('Guide', `<div class="small muted">Could not load guide: ${escapeHTML(e.message)}</div>`);
+    });
+    return;
+  }
+  else if (path==='/editor/'){
+    // Full page editor with tabs: Editor / Preview / AI (placeholder)
+    html += `
+      <div class="card">
+        <div class="ed-tabs">
+          <button class="ed-tab active" data-edtab="editor">Editor</button>
+          <button class="ed-tab" data-edtab="preview">Preview</button>
+          <button class="ed-tab" data-edtab="ai" disabled>AI (coming soon)</button>
+        </div>
+        <div class="ed-panel show" id="panel-editor">
+          <div class="row">
+            <select id="edTarget"><option value="">Select JSON App…</option></select>
+            <button id="edPublish" class="btn">Publish</button>
+          </div>
+          <textarea id="edText" class="code" spellcheck="false"></textarea>
+          <div class="file-hint">Editing a JSON app spec. Changes auto-apply to Preview tab.</div>
+        </div>
+        <div class="ed-panel" id="panel-preview">
+          <div id="edPreviewMount"></div>
+        </div>
+        <div class="ed-panel" id="panel-ai">
+          <div class="small muted">AI Builder is under construction.</div>
+        </div>
+      </div>`;
+    mainEl.innerHTML = html;
+
+    // populate app list
+    const edTarget = document.getElementById('edTarget');
+    const options = (os.apps||[]).filter(a=>a.type==='json').map(a=>`<option value="${a.id}">${a.title}</option>`).join('');
+    edTarget.innerHTML = `<option value="">Select JSON App…</option>${options}`;
+
+    // default to first json app
+    const first = (os.apps||[]).find(a=>a.type==='json');
+    if (first){ edTarget.value = first.id; document.getElementById('edText').value = JSON.stringify(first.spec||{}, null, 2); }
+
+    // tabs
+    const tabBtns = [...document.querySelectorAll('.ed-tab')];
+    const panelEditor = document.getElementById('panel-editor');
+    const panelPreview = document.getElementById('panel-preview');
+    const panelAI = document.getElementById('panel-ai');
+    tabBtns.forEach(b=> b.addEventListener('click', ()=>{
+      if (b.disabled) return;
+      tabBtns.forEach(x=>x.classList.toggle('active', x===b));
+      panelEditor.classList.toggle('show', b.dataset.edtab==='editor');
+      panelPreview.classList.toggle('show', b.dataset.edtab==='preview');
+      panelAI.classList.toggle('show', b.dataset.edtab==='ai');
+      if (b.dataset.edtab==='preview') refreshPreview(); // make sure it shows current
+    }));
+
+    // auto preview (P-A) with debounce
+    const edText = document.getElementById('edText');
+    edText.addEventListener('input', debounce(()=> {
+      // if user is on preview tab, refresh live
+      if (panelPreview.classList.contains('show')) refreshPreview();
+    }, 250));
+
+    edTarget.addEventListener('change', ()=>{
+      const app = (os.apps||[]).find(a=>a.id===edTarget.value);
+      if (app && app.type==='json') document.getElementById('edText').value = JSON.stringify(app.spec||{}, null, 2);
+      if (panelPreview.classList.contains('show')) refreshPreview();
+    });
+
+    function refreshPreview(){
+      try{
+        const spec = JSON.parse(document.getElementById('edText').value||'{}');
+        const m = document.getElementById('edPreviewMount');
+        m.innerHTML = '';
+        const wrap = document.createElement('div');
+        wrap.innerHTML = `<div id="jsonAppMount"></div>`;
+        m.appendChild(wrap);
+        renderJsonApp(document.getElementById('jsonAppMount'), spec);
+      }catch(e){ alert('Invalid JSON: ' + e.message); }
+    }
+
+    // publish current json to users/<uid>/apps/<id>/app.json
+    document.getElementById('edPublish').addEventListener('click', async ()=>{
+      const uid = window.CURRENT_UID || subdomainUid() || prompt('Your UID:');
+      const token = localStorage.getItem('xjson.admin.pat')||'';
+      if (!token) return alert('Admin PAT required (Settings).');
+      const appId = edTarget.value || 'starter';
+      try{
+        const spec = JSON.parse(document.getElementById('edText').value||'{}');
+        const r = await publishAppJson({ uid, appId, spec, token });
+        alert('Published! ' + r.url);
+        window.open(r.url, '_blank');
+      }catch(e){ alert('Publish failed: ' + e.message); }
+    });
+
+    return; // stop normal render
+  }
+  else {
+    // stable/nightly unknown subroutes: show graceful message
     html += section('Not found', `<div class="small muted">Route ${path} not found.</div>`);
   }
+
   mainEl.innerHTML = html;
 }
 
-// Launch
+// launchers
 window.launch = (id)=>{
   const app = (os.apps||[]).find(a=>a.id===id);
   if (!app) return alert('App not found: ' + id);
@@ -181,10 +276,6 @@ window.launch = (id)=>{
     wrap.innerHTML = `<h3 class="h3">${app.title}</h3><div id="jsonAppMount"></div>`;
     mainEl.innerHTML=''; mainEl.appendChild(wrap);
     renderJsonApp(document.getElementById('jsonAppMount'), app.spec||{});
-    // Prefill builder
-    builderTarget.innerHTML = `<option value="${app.id}">${app.title}</option>`;
-    builderTarget.value = app.id;
-    appJsonEl.value = JSON.stringify(app.spec||{}, null, 2);
   } else if (app.type==='iframe'){
     mainEl.innerHTML = `<div class="card"><h3 class="h3">${app.title}</h3>
     <iframe src="${app.src}" style="width:100%;height:72vh;border:0;border-radius:10px;background:#0b0f14"></iframe></div>`;
@@ -193,14 +284,14 @@ window.launch = (id)=>{
   }
 };
 
-// Channels & search
+// channels & search
 chips.forEach(c=> c.addEventListener('click', async ()=>{
   channel = c.dataset.channel; chips.forEach(x=>x.classList.toggle('active', x===c));
-  await bootMain(); // reload OS data from new channel
+  await bootMain();
 }));
 qEl?.addEventListener('input', ()=> { if (!isSubdomain()) render(location.pathname); });
 
-// Sidebar routing
+// sidebar routing
 navBtns.forEach(b=>{
   const r = b.dataset.route;
   if (!r) return;
@@ -208,52 +299,7 @@ navBtns.forEach(b=>{
   if (b.dataset.title) b.title = b.dataset.title;
 });
 
-// Builder
-openBuilderBtn.addEventListener('click', ()=> builder.classList.add('show'));
-closeBuilder.addEventListener('click', ()=> builder.classList.remove('show'));
-function showTab(name){
-  tabs.forEach(t=> t.classList.toggle('active', t.dataset.tab===name));
-  editorPanel.classList.toggle('hidden', name!=='editor');
-  aiPanel.classList.toggle('hidden', name!=='ai');
-}
-tabs.forEach(t=> t.addEventListener('click', ()=> showTab(t.dataset.tab)));
-showTab('editor');
-
-saveAppBtn.addEventListener('click', ()=>{
-  try{ const parsed = JSON.parse(appJsonEl.value); window.applySpec(parsed); alert('Saved to preview. Use Publish to deploy.'); }
-  catch(e){ alert('Invalid JSON: ' + e.message); }
-});
-publishBtn.addEventListener('click', async ()=>{
-  const uid = window.CURRENT_UID || subdomainUid() || prompt('Your UID (e.g., u_name_x1y2):');
-  const token = localStorage.getItem('xjson.admin.pat')||'';
-  if (!token) return alert('Admin PAT required (Settings).');
-  const appId = builderTarget.value || 'starter';
-  try{
-    const spec = JSON.parse(appJsonEl.value||'{}');
-    const r = await publishAppJson({ uid, appId, spec, token });
-    alert('Published! ' + r.url); window.open(r.url, '_blank');
-  }catch(e){ alert('Publish failed: ' + e.message); }
-});
-
-// AI tab
-langflowUrl.value = localStorage.getItem('xjson.langflow')||'';
-chatSend.addEventListener('click', async ()=>{
-  const url = (langflowUrl.value||'').trim(); const prompt = (chatInput.value||'').trim();
-  if (!url) return alert('Enter LangFlow endpoint in Settings/AI tab.');
-  if (!prompt) return;
-  chatLog.innerHTML = `<div>Sending: ${escapeHTML(prompt)}</div>`;
-  try{
-    const current = JSON.parse(appJsonEl.value||'{}');
-    const resp = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ prompt, current }) });
-    const data = await resp.json();
-    const updated = data.scene ? { scene:data.scene, state:data.state||{} } : data;
-    appJsonEl.value = JSON.stringify(updated, null, 2);
-    window.applySpec(updated);
-    chatLog.innerHTML += `<div>Applied changes.</div>`;
-  }catch(e){ chatLog.innerHTML += `<div>Error: ${escapeHTML(e.message)}</div>`; }
-});
-
-// Fullscreen offer
+// fullscreen offer
 function offerFullscreenFor20s(){
   if (!fsOffer) return;
   fsOffer.classList.remove('hidden');
@@ -266,42 +312,37 @@ function offerFullscreenFor20s(){
   fsDismiss.onclick = ()=> { fsOffer.classList.add('hidden'); clearTimeout(t); };
 }
 
-// Strict OS loader (F2)
+// strict OS loader (F2)
 async function loadOS(ch){
   const url = `./${ch}/os.json`;
-  lastFetchPre.textContent = `GET ${url}`;
+  lastFetchPre && (lastFetchPre.textContent = `GET ${url}`);
   const r = await fetch(url, { cache:'no-store' });
   if (!r.ok) {
     const msg = `OS load failed (${r.status}) for ${url}`;
     pushErr('fetch', msg, url);
-    alert(msg); // F2 hard fail
+    alert(msg);
     throw new Error(msg);
   }
-  const data = await r.json();
-  os = data;
-  osMetaPre.textContent = JSON.stringify(os.meta||{channel:ch}, null, 2);
+  os = await r.json();
+  osMetaPre && (osMetaPre.textContent = JSON.stringify(os.meta||{channel:ch}, null, 2));
 }
 
-// Boot flows
 async function bootMain(){
   mainEl.innerHTML = `<div class="boot-msg">Loading ${channel}/os.json …</div>`;
   await loadOS(channel);
-  // Fill builder target
-  const options = (os.apps||[]).filter(a=>a.type==='json').map(a=>`<option value="${a.id}">${a.title}</option>`).join('');
-  builderTarget.innerHTML = `<option value="">Select JSON App…</option>${options}`;
   render(location.pathname);
 }
 async function bootUser(){
   const uid = subdomainUid();
   mainEl.innerHTML = `<div class="boot-msg">Loading ${uid}…</div>`;
   const manUrl = `${USERS_BASE}/${uid}/manifest.json`;
-  lastFetchPre.textContent = `GET ${manUrl}`;
+  lastFetchPre && (lastFetchPre.textContent = `GET ${manUrl}`);
   const r1 = await fetch(manUrl, { cache:'no-store' });
   if (!r1.ok) { const msg=`Manifest not found for ${uid}`; pushErr('fetch', msg, manUrl); alert(msg); throw new Error(msg); }
   const manifest = await r1.json();
   const mainId = manifest.main;
   const appUrl = `${USERS_BASE}/${uid}/apps/${mainId}/app.json`;
-  lastFetchPre.textContent += `\nGET ${appUrl}`;
+  lastFetchPre && (lastFetchPre.textContent += `\nGET ${appUrl}`);
   const r2 = await fetch(appUrl, { cache:'no-store' });
   if (!r2.ok) { const msg=`App not found: ${mainId}`; pushErr('fetch', msg, appUrl); alert(msg); throw new Error(msg); }
   const appSpec = await r2.json();
@@ -310,17 +351,14 @@ async function bootUser(){
   wrap.innerHTML = `<h3 class="h3">${manifest.title||mainId}</h3><div id="jsonAppMount"></div>`;
   mainEl.innerHTML=''; mainEl.appendChild(wrap);
   renderJsonApp(document.getElementById('jsonAppMount'), appSpec);
-  builderTarget.innerHTML = `<option value="${mainId}">${manifest.title||mainId}</option>`;
-  builderTarget.value = mainId;
-  appJsonEl.value = JSON.stringify(appSpec, null, 2);
   offerFullscreenFor20s();
 }
 
-// Debug overlay (D1)
-debugBtn.addEventListener('click', ()=> debugPanel.classList.toggle('hidden'));
-closeDebug.addEventListener('click', ()=> debugPanel.classList.add('hidden'));
+// debug overlay toggle
+debugBtn?.addEventListener('click', ()=> debugPanel.classList.toggle('hidden'));
+closeDebug?.addEventListener('click', ()=> debugPanel.classList.add('hidden'));
 
-// Start
+// start
 if (isSubdomain()) { bootUser().catch(e=>pushErr('bootUser', e.message, 'boot')); }
 else { bootMain().catch(e=>pushErr('bootMain', e.message, 'boot')); }
 
