@@ -1,37 +1,33 @@
 {
   "meta": { "id": "xjson-os", "version": "1.0.0-nightly.1", "channel": "nightly" },
-  "hero": {
-    "title": "[Nightly] Experimental Features",
-    "subtitle": "This channel is for testing new ideas before they hit latest/stable."
-  },
+  "hero": { "title": "[Nightly] Experimental Features", "subtitle": "Testing new ideas before they hit latest/stable." },
   "featured": [
-    { "id": "starter", "title": "Starter Clicker (Nightly)", "tag": "dev", "art": "https://picsum.photos/seed/night1/640/360" }
+    { "id": "starter-clicker", "title": "Starter Clicker (Nightly)", "tag": "dev", "art": "https://picsum.photos/seed/night1/640/360" }
   ],
   "store": [
-    { "id": "starter", "title": "Starter Clicker", "tag": "free", "art": "https://picsum.photos/seed/night2/640/360" }
+    { "id": "starter-clicker", "title": "Starter Clicker", "tag": "JSON Game", "art": "https://picsum.photos/seed/night2/640/360" }
   ],
   "library": [
-    { "id": "starter", "title": "Starter Clicker", "tag": "installed", "art": "https://picsum.photos/seed/night3/640/360" }
+    { "id": "starter-clicker", "title": "Starter Clicker", "tag": "JSON Game", "art": "https://picsum.photos/seed/night3/640/360" }
   ],
   "nowPlaying": [
-    { "id": "starter", "title": "Starter Clicker", "tag": "resume", "art": "https://picsum.photos/seed/night4/640/360" }
+    { "id": "starter-clicker", "title": "Starter Clicker", "tag": "JSON Game", "art": "https://picsum.photos/seed/night4/640/360" }
   ],
   "apps": [
     {
-      "id": "starter",
+      "id": "starter-clicker",
       "title": "Starter Clicker",
       "type": "json",
+      "tag": "dev",
+      "art": "https://picsum.photos/seed/night5/640/360",
       "spec": {
         "state": { "score": 0 },
         "scene": [
           { "type": "text", "value": "Nightly build — Score: ${state.score}" },
-          {
-            "type": "row",
-            "children": [
-              { "type": "button", "label": "Tap +2", "action": "set(score, ${state.score}+2)" },
-              { "type": "button", "label": "Reset",  "action": "set(score, 0)" }
-            ]
-          }
+          { "type": "row", "children": [
+            { "type": "button", "label": "Tap +2", "action": "set(score, ${state.score}+2)" },
+            { "type": "button", "label": "Reset", "action": "set(score, 0)" }
+          ] }
         ]
       }
     }
