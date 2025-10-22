@@ -781,7 +781,20 @@ Open the **Builder**, choose an app (e.g., `starter`), and change the JSON:
 Click **Save** → preview updates instantly.
 Click **Publish** → deploys to your subdomain.
 
----
+---## User Provisioning (P2 Vault)
+
+On first Google Sign-In (main domain only), the OS calls:
+
+- `ensureUserProvisioned(uid, PAT, email)` → writes:
+  - `/users/<uid>/manifest.json` (SSoT)
+  - `/users/<uid>/profile.json` (Base44-style identity)
+  - `/users/<uid>/library.json` (owned apps)
+  - `/users/<uid>/ledger.json` (XP + badges)
+  - `/users/<uid>/vault.json` (asset index)
+  - `/users/<uid>/dashboard.asx`
+  - `/users/<uid>/apps/starter/app.json`
+
+Admin must paste a **fine-grained GitHub PAT** (repo-scoped, Contents RW) in **Settings** first.
 
 ## 🤖 AI Builder
 
