@@ -1,0 +1,10 @@
+{
+  "title": "My First XJSON App",
+  "main": "starter",
+  "apps": [
+    {
+      "id": "starter",
+      "title": "Starter Game"
+    }
+  ]
+}
