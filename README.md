@@ -1,5 +1,3 @@
-# JSON-ASX CDN
-This is the CDN for JSON-ASX.
 Alright, captain—here’s your **solid L2 shell** with **W2 neon Feather icon sidebar**, **Builder = slide-over (B1)**, and **Preview behind (P1)**. It keeps your **R1 redirect + UID subdomains** flow, and it plays nice on mobile (no hamburger; pinned icon rail). I’m also dropping an **awesome README** that recaps everything so far.
 
 Paste these 5 files directly in GitHub:
@@ -781,20 +779,7 @@ Open the **Builder**, choose an app (e.g., `starter`), and change the JSON:
 Click **Save** → preview updates instantly.
 Click **Publish** → deploys to your subdomain.
 
----## User Provisioning (P2 Vault)
-
-On first Google Sign-In (main domain only), the OS calls:
-
-- `ensureUserProvisioned(uid, PAT, email)` → writes:
-  - `/users/<uid>/manifest.json` (SSoT)
-  - `/users/<uid>/profile.json` (Base44-style identity)
-  - `/users/<uid>/library.json` (owned apps)
-  - `/users/<uid>/ledger.json` (XP + badges)
-  - `/users/<uid>/vault.json` (asset index)
-  - `/users/<uid>/dashboard.asx`
-  - `/users/<uid>/apps/starter/app.json`
-
-Admin must paste a **fine-grained GitHub PAT** (repo-scoped, Contents RW) in **Settings** first.
+---
 
 ## 🤖 AI Builder
 
@@ -814,6 +799,20 @@ Admin must paste a **fine-grained GitHub PAT** (repo-scoped, Contents RW) in **S
 * Asset **CDN** (+ quotas, abuse controls)
 * **Monetization** (Stripe, Coinbase)
 * **Friends / presence** (optional)
+## User Provisioning (P2 Vault)
+
+On first Google Sign-In (main domain only), the OS calls:
+
+- `ensureUserProvisioned(uid, PAT, email)` → writes:
+  - `/users/<uid>/manifest.json` (SSoT)
+  - `/users/<uid>/profile.json` (Base44-style identity)
+  - `/users/<uid>/library.json` (owned apps)
+  - `/users/<uid>/ledger.json` (XP + badges)
+  - `/users/<uid>/vault.json` (asset index)
+  - `/users/<uid>/dashboard.asx`
+  - `/users/<uid>/apps/starter/app.json`
+
+Admin must paste a **fine-grained GitHub PAT** (repo-scoped, Contents RW) in **Settings** first.
 
 ---
 
