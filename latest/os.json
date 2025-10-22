@@ -7,7 +7,7 @@
       "title": "Starter Clicker",
       "tag": "JSON Game",
       "type": "json",
-      "art": "https://picsum.photos/seed/clicker/640/360",
+      "art": "@cdn/art/clicker.png",
       "spec": {
         "state": { "score": 0 },
         "scene": [
@@ -24,13 +24,13 @@
       "title": "Runner Mock",
       "tag": "JSON Game",
       "type": "json",
-      "art": "https://picsum.photos/seed/runner/640/360",
+      "art": "@cdn/art/runner.png",
       "spec": {
         "state": { "lives": 3 },
         "scene": [
           { "type": "text", "value": "Lives: ${state.lives}" },
           { "type": "button", "label": "Hit", "action": "set(lives, ${state.lives}-1)" },
-          { "type": "image", "src": "https://picsum.photos/seed/runner-art/800/400" }
+          { "type": "image", "src": "@cdn/art/runner-hero.png" }
         ]
       }
     },
@@ -39,24 +39,24 @@
       "title": "Web Leaderboard",
       "tag": "Iframe App",
       "type": "iframe",
-      "art": "https://picsum.photos/seed/leader/640/360",
+      "art": "@cdn/art/leader.png",
       "src": "https://example.com"
     }
   ],
   "featured": [
-    { "id": "starter-clicker", "title": "Starter Clicker", "tag": "JSON Game", "art": "https://picsum.photos/seed/clicker/640/360" },
-    { "id": "runner-mock", "title": "Runner Mock", "tag": "JSON Game", "art": "https://picsum.photos/seed/runner/640/360" }
+    { "id": "starter-clicker", "title": "Starter Clicker", "tag": "JSON Game", "art": "@cdn/art/clicker.png" },
+    { "id": "runner-mock", "title": "Runner Mock", "tag": "JSON Game", "art": "@cdn/art/runner.png" }
   ],
   "nowPlaying": [
-    { "id": "starter-clicker", "title": "Starter Clicker", "tag": "JSON Game", "art": "https://picsum.photos/seed/clicker2/640/360" }
+    { "id": "starter-clicker", "title": "Starter Clicker", "tag": "JSON Game", "art": "@cdn/art/clicker2.png" }
   ],
   "library": [
-    { "id": "starter-clicker", "title": "Starter Clicker", "tag": "JSON Game", "art": "https://picsum.photos/seed/lib1/640/360" },
-    { "id": "runner-mock", "title": "Runner Mock", "tag": "JSON Game", "art": "https://picsum.photos/seed/lib2/640/360" }
+    { "id": "starter-clicker", "title": "Starter Clicker", "tag": "JSON Game", "art": "@cdn/art/lib1.png" },
+    { "id": "runner-mock", "title": "Runner Mock", "tag": "JSON Game", "art": "@cdn/art/lib2.png" }
   ],
   "store": [
-    { "id": "starter-clicker", "title": "Starter Clicker", "tag": "JSON Game", "art": "https://picsum.photos/seed/store1/640/360" },
-    { "id": "runner-mock", "title": "Runner Mock", "tag": "JSON Game", "art": "https://picsum.photos/seed/store2/640/360" },
-    { "id": "web-leaderboard", "title": "Web Leaderboard", "tag": "Iframe App", "art": "https://picsum.photos/seed/store3/640/360" }
+    { "id": "starter-clicker", "title": "Starter Clicker", "tag": "JSON Game", "art": "@cdn/art/store1.png" },
+    { "id": "runner-mock", "title": "Runner Mock", "tag": "JSON Game", "art": "@cdn/art/store2.png" },
+    { "id": "web-leaderboard", "title": "Web Leaderboard", "tag": "Iframe App", "art": "@cdn/art/store3.png" }
   ]
 }
