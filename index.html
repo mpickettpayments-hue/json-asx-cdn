@@ -1,107 +1,121 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<title>JSON ASX — XJSON</title>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="manifest" href="./manifest.json" />
-<link rel="icon" href="./icon-192.png" />
-<script src="https://accounts.google.com/gsi/client" async defer></script>
-<link rel="stylesheet" href="./style.css" />
+  <meta charset="utf-8" />
+  <title>XJSON • JSON ASX</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" href="./icon-192.png" />
+  <link rel="stylesheet" href="./style.css" />
+  <!-- Google Sign-In (keeps your existing auth.js flow) -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <!-- Feather Icons -->
+  <script src="https://unpkg.com/feather-icons/dist/feather.min.js" defer></script>
 </head>
-
 <body>
-<div class="app">
-  <aside class="sidebar">
-    <div class="brand">
-      <img src="./json-asx.jpg" alt="JSON ASX logo" />
-      <div>
-        <div class="t1">JSON ASX</div>
-        <div class="small muted">XJSON Launcher</div>
+  <div id="appRoot" class="shell">
+    <!-- Pinned neon icon sidebar (W2 ~82px) -->
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="./json-asx.jpg" alt="JSON ASX" />
       </div>
-    </div>
-    <div class="nav">
-      <button data-route="/" class="active">🏠 Home</button>
-      <button data-route="/store/">🛒 Store</button>
-      <button data-route="/library/">🎮 Library</button>
-      <button data-route="/downloads/">⬇️ Downloads</button>
-      <button data-route="/settings/">⚙️ Settings</button>
-    </div>
-
-    <div class="channel">
-      <span class="chip active" data-channel="latest">latest</span>
-      <span class="chip" data-channel="stable">stable</span>
-      <span class="chip" data-channel="nightly">nightly</span>
-    </div>
-  </aside>
-
-  <header class="header">
-    <div class="search">
-      <input id="q" placeholder="Search library or store…" />
-    </div>
-    <div class="actions">
-      <div id="googleBtn"></div>
-      <input id="pat" placeholder="Admin GitHub PAT" style="width:200px" />
-      <button id="savePat" class="btn">Save PAT</button>
-      <button id="refresh" class="btn">Refresh</button>
-    </div>
-  </header>
-
-  <div class="mainwrap">
-    <main class="main" id="main"><div class="muted">Loading XJSON…</div></main>
-    <aside class="builder" id="builder">
-      <div class="row">
-        <select id="builderTarget"><option value="">Select JSON App…</option></select>
-        <button id="saveApp" class="btn">Save</button>
-      </div>
-      <textarea id="appJson" class="code"></textarea>
-      <div class="splitHandle"></div>
-      <div class="helper">
-        <h3>Chat Helper (LangFlow)</h3>
-        <div class="row"><input id="langflowUrl" placeholder="Endpoint" /></div>
-        <div class="row">
-          <input id="chatInput" placeholder="Describe a change…" />
-          <button id="chatSend" class="btn">Apply</button>
-        </div>
-        <div id="chatLog" class="small muted"></div>
-      </div>
-      <button id="publishBtn" class="btn" style="margin-top:10px">Publish to My Domain</button>
+      <nav class="nav">
+        <button class="nav-btn" data-route="/" data-title="Home">
+          <i data-feather="home"></i>
+        </button>
+        <button class="nav-btn" data-route="/store/" data-title="Store">
+          <i data-feather="shopping-bag"></i>
+        </button>
+        <button class="nav-btn" data-route="/library/" data-title="Library">
+          <i data-feather="grid"></i>
+        </button>
+        <button class="nav-btn" data-route="/downloads/" data-title="Downloads">
+          <i data-feather="download"></i>
+        </button>
+        <button class="nav-btn" data-route="/settings/" data-title="Settings">
+          <i data-feather="settings"></i>
+        </button>
+        <div class="spacer"></div>
+        <!-- Open Builder -->
+        <button id="openBuilder" class="nav-btn" data-title="Builder">
+          <i data-feather="code"></i>
+        </button>
+      </nav>
     </aside>
+
+    <!-- Topbar (compact, no hamburger) -->
+    <header class="topbar">
+      <div class="channels">
+        <span class="chip active" data-channel="latest">latest</span>
+        <span class="chip" data-channel="stable">stable</span>
+        <span class="chip" data-channel="nightly">nightly</span>
+      </div>
+      <div class="actions">
+        <input id="q" class="search" placeholder="Search…" />
+        <div id="googleBtn"></div>
+        <input id="pat" class="pat" placeholder="Admin GitHub PAT" />
+        <button id="savePat" class="btn">Save PAT</button>
+        <button id="refresh" class="btn">Refresh</button>
+      </div>
+    </header>
+
+    <!-- Main content (apps render here; preview is the content) -->
+    <main id="main" class="content">
+      <div class="boot-msg">Loading XJSON…</div>
+    </main>
+
+    <!-- Slide-over Builder (B1). On mobile becomes full-screen modal. -->
+    <aside id="builder" class="builder hidden">
+      <div class="builder-header">
+        <div class="tabs">
+          <button class="tab active" data-tab="editor">Editor</button>
+          <button class="tab" data-tab="ai">AI</button>
+        </div>
+        <button id="closeBuilder" class="icon-btn" title="Close Builder">
+          <i data-feather="x"></i>
+        </button>
+      </div>
+
+      <div class="builder-body">
+        <!-- Editor tab -->
+        <section class="tab-panel" data-tab-panel="editor">
+          <div class="row">
+            <select id="builderTarget"><option value="">Select JSON App…</option></select>
+            <button id="saveApp" class="btn">Save</button>
+            <button id="publishBtn" class="btn">Publish</button>
+          </div>
+          <textarea id="appJson" class="code" spellcheck="false"></textarea>
+        </section>
+
+        <!-- AI tab -->
+        <section class="tab-panel hidden" data-tab-panel="ai">
+          <div class="row">
+            <input id="langflowUrl" placeholder="LangFlow endpoint (POST) e.g. https://…/api/v1/run" />
+          </div>
+          <div class="row">
+            <input id="chatInput" placeholder="Describe a change (we’ll apply it, not paste code)" />
+            <button id="chatSend" class="btn">Apply</button>
+          </div>
+          <div id="chatLog" class="chat-log"></div>
+        </section>
+      </div>
+    </aside>
+
+    <!-- Fullscreen prompt (20s) for subdomains -->
+    <div id="fsOffer" class="fs-offer hidden">
+      <span>Tip: Fullscreen for best experience</span>
+      <button id="fsGo" class="btn">Go Fullscreen</button>
+      <button id="fsDismiss" class="btn">Dismiss</button>
+    </div>
   </div>
-</div>
 
-<div id="fsOffer" class="fs-offer hidden">
-  <span>Tip: Fullscreen for best experience</span>
-  <button id="fsGo" class="btn">Go Fullscreen</button>
-  <button id="fsDismiss" class="btn">Dismiss</button>
-</div>
-
-<script type="module">
-  import { initGoogleSignIn } from './auth.js';
-  import { ensureUserProvisioned } from './provision.js';
-  import { publishAppJson } from './publish.js';
-  import { redirectToUserDomain } from './router-tools.js';
-
-  // Load admin PAT if saved
-  const patEl = document.getElementById('pat');
-  patEl.value = localStorage.getItem('xjson.admin.pat') || '';
-  document.getElementById('savePat').onclick = () => {
-    localStorage.setItem('xjson.admin.pat', patEl.value.trim());
-    alert('PAT saved.');
-  };
-
-  // Google Sign-In → Provision → Redirect
-  initGoogleSignIn({
-    buttonId: 'googleBtn',
-    onSignedIn: async ({ uid }) => {
-      const token = localStorage.getItem('xjson.admin.pat') || '';
-      if (!token) return alert('Admin PAT required first.');
-      const r = await ensureUserProvisioned(uid, token);
-      redirectToUserDomain(uid); // ✅ R1 behavior
-    }
-  });
-</script>
-
-<script type="module" src="./app.js"></script>
+  <!-- App logic -->
+  <script type="module" src="./app.js"></script>
+  <script>
+    // Activate feather icons after DOM
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.feather) window.feather.replace();
+    });
+  </script>
 </body>
 </html>
