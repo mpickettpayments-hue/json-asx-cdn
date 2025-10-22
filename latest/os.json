@@ -2,8 +2,7 @@
   "meta": { "id": "xjson-os", "version": "1.0.0", "channel": "latest" },
   "hero": { "title": "Welcome to XJSON", "subtitle": "Build games with JSON. Launch anything." },
   "apps": [
-    {
-
+{
   "id": "tower-defense",
   "title": "XJSON Tower Defense",
   "tag": "JSON-2D",
