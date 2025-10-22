@@ -9,12 +9,24 @@
   <link rel="stylesheet" href="./style.css" />
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://unpkg.com/feather-icons/dist/feather.min.js" defer></script>
+  <style>
+    /* tiny additions for editor tabs */
+    .ed-tabs{display:flex;gap:8px;margin-bottom:10px}
+    .ed-tab{background:#0f1720;border:1px solid #1b2940;color:#cfe3f4;border-radius:8px;padding:8px 12px;cursor:pointer}
+    .ed-tab.active,.ed-tab:hover{background:#142438;border-color:#244b71}
+    .ed-panel{display:none}
+    .ed-panel.show{display:block}
+    .file-hint{font-size:12px;color:#9fb8ce;margin:6px 0 0}
+  </style>
 </head>
 <body>
   <div id="appRoot" class="shell">
-    <!-- Pinned neon icon sidebar -->
+    <!-- Sidebar (L1: logo here only) -->
     <aside class="sidebar">
-      <div class="brand"><img src="./json-asx.jpg" alt="JSON ASX" /></div>
+      <div class="brand">
+        <!-- Tries logo.png, then icon-192.png, then json-asx.jpg -->
+        <img id="brandLogo" src="./logo.png" alt="XJSON" onerror="this.onerror=null;this.src='./icon-192.png';">
+      </div>
       <nav class="nav">
         <button class="nav-btn" data-route="/" data-title="Home"><i data-feather="home"></i></button>
         <button class="nav-btn" data-route="/store/" data-title="Store"><i data-feather="shopping-bag"></i></button>
@@ -22,11 +34,14 @@
         <button class="nav-btn" data-route="/downloads/" data-title="Downloads"><i data-feather="download"></i></button>
         <button class="nav-btn" data-route="/settings/" data-title="Settings"><i data-feather="settings"></i></button>
         <div class="spacer"></div>
-        <button id="openBuilder" class="nav-btn" data-title="Builder"><i data-feather="code"></i></button>
+        <!-- Editor route button (E2) -->
+        <button class="nav-btn" data-route="/editor/" data-title="Editor"><i data-feather="code"></i></button>
+        <!-- Guide -->
+        <button class="nav-btn" data-route="/guide/" data-title="User Guide"><i data-feather="book"></i></button>
       </nav>
     </aside>
 
-    <!-- TB2: channels left, Search | Refresh | Debug | Profile right -->
+    <!-- Topbar TB2 -->
     <header class="topbar">
       <div class="channels">
         <span class="chip active" data-channel="latest">latest</span>
@@ -42,48 +57,19 @@
       </div>
     </header>
 
-    <!-- Main content (fullscreen) -->
+    <!-- Main content -->
     <main id="main" class="content">
       <div class="boot-msg">Loading XJSON…</div>
     </main>
 
-    <!-- Builder slide-over -->
-    <aside id="builder" class="builder hidden">
-      <div class="builder-header">
-        <div class="tabs">
-          <button class="tab active" data-tab="editor">Editor</button>
-          <button class="tab" data-tab="ai">AI</button>
-        </div>
-        <button id="closeBuilder" class="icon-btn" title="Close Builder"><i data-feather="x"></i></button>
-      </div>
-      <div class="builder-body">
-        <section class="tab-panel" data-tab-panel="editor">
-          <div class="row">
-            <select id="builderTarget"><option value="">Select JSON App…</option></select>
-            <button id="saveApp" class="btn">Save</button>
-            <button id="publishBtn" class="btn">Publish</button>
-          </div>
-          <textarea id="appJson" class="code" spellcheck="false"></textarea>
-        </section>
-        <section class="tab-panel hidden" data-tab-panel="ai">
-          <div class="row"><input id="langflowUrl" placeholder="LangFlow endpoint (POST)" /></div>
-          <div class="row">
-            <input id="chatInput" placeholder="Describe a change (we’ll apply it)" />
-            <button id="chatSend" class="btn">Apply</button>
-          </div>
-          <div id="chatLog" class="chat-log"></div>
-        </section>
-      </div>
-    </aside>
-
-    <!-- Fullscreen prompt (20s) for subdomains -->
+    <!-- Fullscreen prompt (subdomains) -->
     <div id="fsOffer" class="fs-offer hidden">
       <span>Tip: Fullscreen for best experience</span>
       <button id="fsGo" class="btn">Go Fullscreen</button>
       <button id="fsDismiss" class="btn">Dismiss</button>
     </div>
 
-    <!-- D1 Debug overlay (OBD table) -->
+    <!-- Debug overlay (unchanged API) -->
     <div id="debugPanel" class="debug-panel hidden">
       <div class="debug-header">
         <strong>System Debug</strong>
@@ -105,27 +91,8 @@
       </div>
     </div>
   </div>
-<script type="module">
-  import { initGoogleSignIn } from './auth.js';
-  import { ensureUserProvisioned } from './provision.js';
-  import { redirectToUserDomain } from './router-tools.js';
 
-  const pat = () => localStorage.getItem('xjson.admin.pat') || '';
-
-  initGoogleSignIn({
-    buttonId: 'googleBtn',
-    onSignedIn: async ({ uid, email }) => {
-      if (!pat()) { alert('Admin PAT required (Settings) before provisioning.'); return; }
-      try {
-        await ensureUserProvisioned(uid, pat(), email);
-        redirectToUserDomain(uid);             // R1 behavior
-      } catch (e) {
-        alert('Provisioning failed: ' + e.message);
-      }
-    }
-  });
-</script>
-
+  <!-- App logic -->
   <script type="module" src="./app.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', ()=> { if (window.feather) window.feather.replace(); });
