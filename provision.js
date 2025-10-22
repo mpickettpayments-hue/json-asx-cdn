@@ -1,89 +1,138 @@
-// provision.js
-// One-time install of a new user's starter site into the repo.
-// Uses GitHub REST API: PUT /repos/{owner}/{repo}/contents/{path}
+// provision.js — P2: Vault + Provision (GitHub Contents API, repo-scoped)
+// Uses the PAT saved in localStorage ("xjson.admin.pat") by the admin on Settings.
+// publish.js already imports { upsertJson } from here — keep signatures stable.
+
 const GH_OWNER  = 'mpickettpayments-hue';
 const GH_REPO   = 'json-asx-cdn';
 const GH_BRANCH = 'main';
 
-// Helper
-async function ghGet(path) {
+// ---------- GitHub helpers ----------
+async function ghGet(path, token) {
   const url = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${encodeURIComponent(path)}?ref=${GH_BRANCH}`;
-  const r = await fetch(url);
-  return { ok: r.ok, status: r.status, json: r.ok ? await r.json() : null };
+  const r = await fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+  return { ok: r.ok, status: r.status, json: r.ok ? await r.json() : await r.json().catch(()=>null) };
 }
-async function ghPutFile(path, contentObj, token, message) {
+async function ghPut(path, contentB64, message, sha, token) {
   const url = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${encodeURIComponent(path)}`;
   const body = {
-    message,
-    content: btoa(unescape(encodeURIComponent(JSON.stringify(contentObj, null, 2)))),
-    branch: GH_BRANCH
-  };
-  const r = await fetch(url, {
-    method: 'PUT',
-    headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github+json' },
-    body: JSON.stringify(body)
-  });
-  if (!r.ok) throw new Error(`GitHub PUT failed for ${path}: ${r.status}`);
-  return r.json();
-}
-async function ghUpdateFile(path, contentObj, token, message, sha) {
-  const url = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${encodeURIComponent(path)}`;
-  const body = {
-    message,
-    content: btoa(unescape(encodeURIComponent(JSON.stringify(contentObj, null, 2)))),
+    message: message || `Update ${path}`,
+    content: contentB64,
     branch: GH_BRANCH,
-    sha
+    ...(sha ? { sha } : {})
   };
   const r = await fetch(url, {
     method: 'PUT',
-    headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github+json' },
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
     body: JSON.stringify(body)
   });
-  if (!r.ok) throw new Error(`GitHub UPDATE failed for ${path}: ${r.status}`);
+  if (!r.ok) {
+    const txt = await r.text();
+    throw new Error(`PUT ${path} failed (${r.status}): ${txt}`);
+  }
   return r.json();
 }
+function toB64(objOrString) {
+  const s = (typeof objOrString === 'string') ? objOrString : JSON.stringify(objOrString, null, 2);
+  // btoa expects ASCII; encode UTF-8 safely:
+  return btoa(unescape(encodeURIComponent(s)));
+}
 
-export async function ensureUserProvisioned(uid, token) {
-  // 1) Does users/<uid>/manifest.json exist?
-  const manifestPath = `users/${uid}/manifest.json`;
-  const probe = await ghGet(manifestPath);
-  if (probe.ok) return { created: false, uid }; // already provisioned
+// Public: upsert JSON file with proper sha handling
+export async function upsertJson(path, data, token, message) {
+  const exists = await ghGet(path, token);
+  const b64 = toB64(data);
+  const sha = exists.ok ? exists.json.sha : undefined;
+  return ghPut(path, b64, message, sha, token);
+}
 
-  if (probe.status !== 404) throw new Error('Probe failed: ' + probe.status);
+// ---------- P2: Ensure user scaffold ----------
+export async function ensureUserProvisioned(uid, token, email) {
+  // Detect if already provisioned (manifest is the SSoT)
+  const man = await ghGet(`users/${uid}/manifest.json`, token);
+  if (man.ok) return { created: false, uid };
 
-  // 2) Create starter manifest + app from template (inline template here for zero dependencies)
-  const starterManifest = {
-    title: "My First XJSON App",
+  // Defaults
+  const now = new Date().toISOString();
+
+  const manifest = {
+    title: uid,
     main: "starter",
-    apps: [{ id: "starter", title: "Starter Game" }]
+    apps: [{ id: "starter", title: "Starter Clicker" }],
+    createdAt: now,
+    channel: "latest"
   };
+
+  const profile = {
+    "@profile": {
+      uid,
+      email: email || null,
+      joined: now,
+      avatar: null,
+      badges: ["founder"],
+      xp: 50,
+      flags: { beta: true }
+    }
+  };
+
+  const library = {
+    "@library": {
+      uid,
+      apps: ["starter"],
+      updated: now
+    }
+  };
+
+  const ledger = {
+    "@ledger": {
+      uid,
+      xp: [{ ts: now, delta: 50, reason: "founder" }],
+      badges: [{ ts: now, id: "founder" }]
+    }
+  };
+
+  const vault = {
+    "@vault": {
+      uid,
+      buckets: {
+        apps: ["apps/starter/app.json"],
+        scenes: ["dashboard.asx"],
+        meta: ["manifest.json", "profile.json", "library.json", "ledger.json"]
+      },
+      updated: now
+    }
+  };
+
   const starterApp = {
     state: { score: 0 },
     scene: [
-      { type: "text", value: "Score: ${state.score}" },
-      { type: "row", children: [
-        { type: "button", label: "Tap +1", action: "set(score, ${state.score}+1)" },
-        { type: "button", label: "Reset",  action: "set(score, 0)" }
+      { "type": "text", "value": "Score: ${state.score}" },
+      { "type": "row", "children": [
+        { "type": "button", "label": "Tap +1", "action": "set(score, ${state.score}+1)" },
+        { "type": "button", "label": "Reset",  "action": "set(score, 0)" }
       ] }
     ]
   };
 
-  // 3) Write files
-  await ghPutFile(manifestPath, starterManifest, token, `Provision user ${uid} (manifest)`);
-  await ghPutFile(`users/${uid}/apps/starter/app.json`, starterApp, token, `Provision user ${uid} (starter app)`);
+  const dashboardASX = {
+    "@scene": "dashboard",
+    "title": "Welcome",
+    "blocks": [
+      { "type": "text", "value": `Hi ${uid}! This is your dashboard.` },
+      { "type": "text", "value": "Open Builder (</>) to edit your starter app, then Publish." }
+    ]
+  };
+
+  // Create files (order roughly top-down)
+  await upsertJson(`users/${uid}/manifest.json`, manifest, token, `Provision manifest for ${uid}`);
+  await upsertJson(`users/${uid}/profile.json`,  profile,  token, `Provision profile for ${uid}`);
+  await upsertJson(`users/${uid}/library.json`,  library,  token, `Provision library for ${uid}`);
+  await upsertJson(`users/${uid}/ledger.json`,   ledger,   token, `Provision ledger for ${uid}`);
+  await upsertJson(`users/${uid}/vault.json`,    vault,    token, `Provision vault for ${uid}`);
+  await upsertJson(`users/${uid}/dashboard.asx`, dashboardASX, token, `Provision dashboard for ${uid}`);
+  await upsertJson(`users/${uid}/apps/starter/app.json`, starterApp, token, `Provision starter app for ${uid}`);
 
   return { created: true, uid };
-}
-
-// Utility to upsert a JSON file (used by publisher too)
-export async function upsertJson(path, obj, token, commitMsg) {
-  const read = await ghGet(path);
-  if (read.ok) {
-    const sha = read.json.sha;
-    return ghUpdateFile(path, obj, token, commitMsg, sha);
-  } else if (read.status === 404) {
-    return ghPutFile(path, obj, token, commitMsg);
-  } else {
-    throw new Error(`Read failed ${read.status} for ${path}`);
-  }
 }
