@@ -1,192 +1,107 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <base href="./">
-  <title>JSON ASX — XJSON</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <link rel="manifest" href="./manifest.json" />
-  <link rel="icon" href="./icon-192.png" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https: data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https:; frame-src https:;">
-  <style>
-    :root { --bg:#0b0f14; --panel:#10161d; --muted:#8aa0b2; --text:#e4eef8; --accent:#2aa9ff; --tile:#0f141b; --tile2:#111923; --radius:14px; }
-    *{box-sizing:border-box} html,body{height:100%}
-    body{margin:0;background:linear-gradient(180deg,#0a0e13,#0d131a 30%,#0b0f14);color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif}
-    .app{display:grid;grid-template-columns:260px 1fr;grid-template-rows:64px calc(100% - 64px);grid-template-areas:"sidebar header" "sidebar main";height:100%}
-    .sidebar{grid-area:sidebar;background:var(--panel);padding:20px;border-right:1px solid #18222e;display:flex;flex-direction:column;gap:18px}
-    .brand{display:flex;align-items:center;gap:12px}
-    .brand img{width:36px;height:36px;object-fit:cover;border-radius:8px}
-    .brand .t1{font-weight:700;letter-spacing:.2px}
-    .nav{display:flex;flex-direction:column;gap:8px;margin-top:12px}
-    .nav button{background:transparent;border:0;color:var(--text);text-align:left;padding:10px 12px;border-radius:10px;cursor:pointer;font-size:15px}
-    .nav button.active,.nav button:hover{background:#12202c}
-    .channel{margin-top:auto;display:flex;gap:8px;flex-wrap:wrap}
-    .chip{border:1px solid #203040;background:#0b131b;color:#bcd0e0;padding:6px 10px;border-radius:20px;font-size:12px;cursor:pointer}
-    .chip.active{background:#17324a;border-color:#24527a;color:#e9f5ff}
-    .header{grid-area:header;display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid #18222e}
-    .search{flex:1;max-width:520px;margin-left:16px}
-    .search input{width:100%;background:#0e1620;border:1px solid #1b2734;border-radius:999px;padding:10px 14px;color:var(--text)}
-    .header .actions{display:flex;align-items:center;gap:10px}
-    .btn{background:#15324a;border:1px solid #214f74;color:#d6ecff;border-radius:10px;padding:8px 12px;cursor:pointer}
-    .mainwrap{grid-area:main;display:grid;grid-template-columns:1fr 420px;gap:10px;overflow:hidden}
-    .main{overflow:auto;padding:22px}
-    .builder{border-left:1px solid #18222e;background:var(--panel);padding:14px;overflow:auto}
-    .section{margin-bottom:26px}
-    .hero{display:grid;grid-template-columns:2fr 1fr;gap:16px}
-    .card{background:var(--tile2);border:1px solid #172231;border-radius:var(--radius);padding:16px}
-    .card h3{margin:0 0 8px 0}
-    .tilegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
-    .tile{background:var(--tile);border:1px solid #172231;border-radius:12px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column}
-    .tile img{width:100%;aspect-ratio:16/9;object-fit:cover;background:#0b0f14}
-    .tile .meta{padding:10px 12px;display:flex;justify-content:space-between;align-items:center;font-size:14px;color:#cfe3f4}
-    .muted{color:var(--muted)} .small{font-size:12px}
-
-    /* Fullscreen offer bar (subdomain only, auto-hide after 20s) */
-    .fs-offer{position:fixed;left:50%;transform:translateX(-50%);bottom:16px;background:#0f1720;border:1px solid #223246;
-      color:#e9f5ff;border-radius:12px;padding:10px 14px;display:flex;gap:10px;align-items:center;z-index:9999;box-shadow:0 8px 30px rgba(0,0,0,.35)}
-    .fs-offer.hidden{display:none}
-  </style>
-
-
+<meta charset="utf-8" />
+<title>JSON ASX — XJSON</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="manifest" href="./manifest.json" />
+<link rel="icon" href="./icon-192.png" />
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<link rel="stylesheet" href="./style.css" />
 </head>
+
 <body>
-  <div class="app">
-    <aside class="sidebar">
-      <div class="brand">
-        <img src="./json-asx.jpg" alt="JSON ASX logo" />
-        <div>
-          <div class="t1">JSON ASX</div>
-          <div class="small muted">XJSON Launcher</div>
-        </div>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="./json-asx.jpg" alt="JSON ASX logo" />
+      <div>
+        <div class="t1">JSON ASX</div>
+        <div class="small muted">XJSON Launcher</div>
       </div>
-      <div class="nav">
-        <button data-route="/" class="active">🏠 Home</button>
-        <button data-route="/store/">🛒 Store</button>
-        <button data-route="/library/">🎮 Library</button>
-        <button data-route="/downloads/">⬇️ Downloads</button>
-        <button data-route="/settings/">⚙️ Settings</button>
-      </div>
-      <div class="channel">
-        <span class="chip active" data-channel="latest">latest</span>
-        <span class="chip" data-channel="stable">stable</span>
-        <span class="chip" data-channel="nightly">nightly</span>
-      </div>
-    </aside>
-
-    <header class="header">
-    <div class="search"><input id="q" placeholder="Search library or store…" /></div>
-      <div class="actions">
-       <button id="install" class="btn">Install</button>
-       <button id="refresh" class="btn">Refresh</button>
-       <div id="googleBtn"></div>
-       <input id="pat" placeholder="Admin GitHub PAT (repo-scoped)" style="width:240px" />
-       <button id="savePat" class="btn">Save PAT</button>
-       <button id="refresh" class="btn">Refresh</button>
-       </div>
-
-<!-- before closing body, load modules -->
-<script type="module">
-  import { initGoogleSignIn } from './auth.js';
-  import { ensureUserProvisioned } from './provision.js';
-  import { publishAppJson } from './publish.js';
-
-  // PAT storage (admin enters once; safe MVP: scope it to this single repo)
-  const patEl = document.getElementById('pat');
-  const savePat = document.getElementById('savePat');
-  patEl.value = localStorage.getItem('xjson.admin.pat') || '';
-  savePat.onclick = () => {
-    localStorage.setItem('xjson.admin.pat', patEl.value.trim());
-    alert('Saved admin PAT locally.');
-  };
-
-  // Sign-in → provision (first time only)
-  initGoogleSignIn({
-    buttonId: 'googleBtn',
-    onSignedIn: async ({ email, uid }) => {
-      const token = localStorage.getItem('xjson.admin.pat') || '';
-      if (!token) { alert('Admin PAT required to auto-provision users. Paste it and Save first.'); return; }
-
-      try {
-        const r = await ensureUserProvisioned(uid, token);
-        alert(r.created ? `Provisioned ${uid}.` : `Welcome back ${uid}.`);
-        // Optional: publish the current Builder app as new
-        // Example: publish starter-clicker under user space
-        // const spec = { state:{score:0}, scene:[...] };
-        // await publishAppJson({ uid, appId: 'starter', spec, token });
-        // window.open(`https://${uid}.xjson.app/`, '_blank');
-      } catch (e) {
-        alert('Provision error: ' + e.message);
-      }
-    }
-  });
-</script>
-
-    </header>
-
-    <div class="mainwrap">
-      <main class="main" id="main"><div class="muted">Loading XJSON…</div></main>
-
-      <aside class="builder" id="builder">
-        <div class="row">
-          <select id="builderTarget"><option value="">Select JSON App to edit…</option></select>
-          <button id="saveApp" class="btn">Save</button>
-        </div>
-        <textarea id="appJson" class="code" placeholder='{ "scene": [ {"type":"text","value":"Hello"} ] }'></textarea>
-        <div class="splitHandle"></div>
-        <div class="helper">
-          <h3 style="margin:0 0 8px">Chat Helper (LangFlow)</h3>
-          <div class="row"><input id="langflowUrl" placeholder="LangFlow endpoint (POST) e.g. https://.../api/v1/run" /></div>
-          <div class="row"><input id="chatInput" placeholder="Describe a change…" /><button id="chatSend" class="btn">Apply</button></div>
-          <div id="chatLog" class="small muted"></div>
-        </div>
-      </aside>
     </div>
-  </div>
+    <div class="nav">
+      <button data-route="/" class="active">🏠 Home</button>
+      <button data-route="/store/">🛒 Store</button>
+      <button data-route="/library/">🎮 Library</button>
+      <button data-route="/downloads/">⬇️ Downloads</button>
+      <button data-route="/settings/">⚙️ Settings</button>
+    </div>
 
-  <!-- Fullscreen offer (shown only on subdomains; auto-hides after 20s) -->
-  <div id="fsOffer" class="fs-offer hidden">
-    <span>Tip: press for Fullscreen</span>
-    <button id="fsGo" class="btn">Go Fullscreen</button>
-    <button id="fsDismiss" class="btn">Dismiss</button>
-  </div>
+    <div class="channel">
+      <span class="chip active" data-channel="latest">latest</span>
+      <span class="chip" data-channel="stable">stable</span>
+      <span class="chip" data-channel="nightly">nightly</span>
+    </div>
+  </aside>
 
-  <script type="module" src="./app.js"></script>
-  <!-- before closing body, load modules -->
+  <header class="header">
+    <div class="search">
+      <input id="q" placeholder="Search library or store…" />
+    </div>
+    <div class="actions">
+      <div id="googleBtn"></div>
+      <input id="pat" placeholder="Admin GitHub PAT" style="width:200px" />
+      <button id="savePat" class="btn">Save PAT</button>
+      <button id="refresh" class="btn">Refresh</button>
+    </div>
+  </header>
+
+  <div class="mainwrap">
+    <main class="main" id="main"><div class="muted">Loading XJSON…</div></main>
+    <aside class="builder" id="builder">
+      <div class="row">
+        <select id="builderTarget"><option value="">Select JSON App…</option></select>
+        <button id="saveApp" class="btn">Save</button>
+      </div>
+      <textarea id="appJson" class="code"></textarea>
+      <div class="splitHandle"></div>
+      <div class="helper">
+        <h3>Chat Helper (LangFlow)</h3>
+        <div class="row"><input id="langflowUrl" placeholder="Endpoint" /></div>
+        <div class="row">
+          <input id="chatInput" placeholder="Describe a change…" />
+          <button id="chatSend" class="btn">Apply</button>
+        </div>
+        <div id="chatLog" class="small muted"></div>
+      </div>
+      <button id="publishBtn" class="btn" style="margin-top:10px">Publish to My Domain</button>
+    </aside>
+  </div>
+</div>
+
+<div id="fsOffer" class="fs-offer hidden">
+  <span>Tip: Fullscreen for best experience</span>
+  <button id="fsGo" class="btn">Go Fullscreen</button>
+  <button id="fsDismiss" class="btn">Dismiss</button>
+</div>
+
 <script type="module">
   import { initGoogleSignIn } from './auth.js';
   import { ensureUserProvisioned } from './provision.js';
   import { publishAppJson } from './publish.js';
+  import { redirectToUserDomain } from './router-tools.js';
 
-  // PAT storage (admin enters once; safe MVP: scope it to this single repo)
+  // Load admin PAT if saved
   const patEl = document.getElementById('pat');
-  const savePat = document.getElementById('savePat');
   patEl.value = localStorage.getItem('xjson.admin.pat') || '';
-  savePat.onclick = () => {
+  document.getElementById('savePat').onclick = () => {
     localStorage.setItem('xjson.admin.pat', patEl.value.trim());
-    alert('Saved admin PAT locally.');
+    alert('PAT saved.');
   };
 
-  // Sign-in → provision (first time only)
+  // Google Sign-In → Provision → Redirect
   initGoogleSignIn({
     buttonId: 'googleBtn',
-    onSignedIn: async ({ email, uid }) => {
+    onSignedIn: async ({ uid }) => {
       const token = localStorage.getItem('xjson.admin.pat') || '';
-      if (!token) { alert('Admin PAT required to auto-provision users. Paste it and Save first.'); return; }
-
-      try {
-        const r = await ensureUserProvisioned(uid, token);
-        alert(r.created ? `Provisioned ${uid}.` : `Welcome back ${uid}.`);
-        // Optional: publish the current Builder app as new
-        // Example: publish starter-clicker under user space
-        // const spec = { state:{score:0}, scene:[...] };
-        // await publishAppJson({ uid, appId: 'starter', spec, token });
-        // window.open(`https://${uid}.xjson.app/`, '_blank');
-      } catch (e) {
-        alert('Provision error: ' + e.message);
-      }
+      if (!token) return alert('Admin PAT required first.');
+      const r = await ensureUserProvisioned(uid, token);
+      redirectToUserDomain(uid); // ✅ R1 behavior
     }
   });
 </script>
+
+<script type="module" src="./app.js"></script>
 </body>
 </html>
