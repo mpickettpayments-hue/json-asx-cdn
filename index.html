@@ -7,43 +7,26 @@
   <link rel="manifest" href="./manifest.json" />
   <link rel="icon" href="./icon-192.png" />
   <link rel="stylesheet" href="./style.css" />
-  <!-- Google Sign-In (keeps your existing auth.js flow) -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <!-- Feather Icons -->
   <script src="https://unpkg.com/feather-icons/dist/feather.min.js" defer></script>
 </head>
 <body>
   <div id="appRoot" class="shell">
-    <!-- Pinned neon icon sidebar (W2 ~82px) -->
+    <!-- Pinned neon icon sidebar -->
     <aside class="sidebar">
-      <div class="brand">
-        <img src="./json-asx.jpg" alt="JSON ASX" />
-      </div>
+      <div class="brand"><img src="./json-asx.jpg" alt="JSON ASX" /></div>
       <nav class="nav">
-        <button class="nav-btn" data-route="/" data-title="Home">
-          <i data-feather="home"></i>
-        </button>
-        <button class="nav-btn" data-route="/store/" data-title="Store">
-          <i data-feather="shopping-bag"></i>
-        </button>
-        <button class="nav-btn" data-route="/library/" data-title="Library">
-          <i data-feather="grid"></i>
-        </button>
-        <button class="nav-btn" data-route="/downloads/" data-title="Downloads">
-          <i data-feather="download"></i>
-        </button>
-        <button class="nav-btn" data-route="/settings/" data-title="Settings">
-          <i data-feather="settings"></i>
-        </button>
+        <button class="nav-btn" data-route="/" data-title="Home"><i data-feather="home"></i></button>
+        <button class="nav-btn" data-route="/store/" data-title="Store"><i data-feather="shopping-bag"></i></button>
+        <button class="nav-btn" data-route="/library/" data-title="Library"><i data-feather="grid"></i></button>
+        <button class="nav-btn" data-route="/downloads/" data-title="Downloads"><i data-feather="download"></i></button>
+        <button class="nav-btn" data-route="/settings/" data-title="Settings"><i data-feather="settings"></i></button>
         <div class="spacer"></div>
-        <!-- Open Builder -->
-        <button id="openBuilder" class="nav-btn" data-title="Builder">
-          <i data-feather="code"></i>
-        </button>
+        <button id="openBuilder" class="nav-btn" data-title="Builder"><i data-feather="code"></i></button>
       </nav>
     </aside>
 
-    <!-- Topbar (compact, no hamburger) -->
+    <!-- TB2: channels left, Search | Refresh | Debug | Profile right -->
     <header class="topbar">
       <div class="channels">
         <span class="chip active" data-channel="latest">latest</span>
@@ -52,32 +35,28 @@
       </div>
       <div class="actions">
         <input id="q" class="search" placeholder="Search…" />
-        <div id="googleBtn"></div>
-        <input id="pat" class="pat" placeholder="Admin GitHub PAT" />
-        <button id="savePat" class="btn">Save PAT</button>
         <button id="refresh" class="btn">Refresh</button>
+        <button id="debugBtn" class="btn">Debug</button>
+        <div id="googleBtn" title="Sign in"></div>
+        <button id="profileBtn" class="icon-btn" title="Profile"><i data-feather="user"></i></button>
       </div>
     </header>
 
-    <!-- Main content (apps render here; preview is the content) -->
+    <!-- Main content (fullscreen) -->
     <main id="main" class="content">
       <div class="boot-msg">Loading XJSON…</div>
     </main>
 
-    <!-- Slide-over Builder (B1). On mobile becomes full-screen modal. -->
+    <!-- Builder slide-over -->
     <aside id="builder" class="builder hidden">
       <div class="builder-header">
         <div class="tabs">
           <button class="tab active" data-tab="editor">Editor</button>
           <button class="tab" data-tab="ai">AI</button>
         </div>
-        <button id="closeBuilder" class="icon-btn" title="Close Builder">
-          <i data-feather="x"></i>
-        </button>
+        <button id="closeBuilder" class="icon-btn" title="Close Builder"><i data-feather="x"></i></button>
       </div>
-
       <div class="builder-body">
-        <!-- Editor tab -->
         <section class="tab-panel" data-tab-panel="editor">
           <div class="row">
             <select id="builderTarget"><option value="">Select JSON App…</option></select>
@@ -86,14 +65,10 @@
           </div>
           <textarea id="appJson" class="code" spellcheck="false"></textarea>
         </section>
-
-        <!-- AI tab -->
         <section class="tab-panel hidden" data-tab-panel="ai">
+          <div class="row"><input id="langflowUrl" placeholder="LangFlow endpoint (POST)" /></div>
           <div class="row">
-            <input id="langflowUrl" placeholder="LangFlow endpoint (POST) e.g. https://…/api/v1/run" />
-          </div>
-          <div class="row">
-            <input id="chatInput" placeholder="Describe a change (we’ll apply it, not paste code)" />
+            <input id="chatInput" placeholder="Describe a change (we’ll apply it)" />
             <button id="chatSend" class="btn">Apply</button>
           </div>
           <div id="chatLog" class="chat-log"></div>
@@ -107,15 +82,33 @@
       <button id="fsGo" class="btn">Go Fullscreen</button>
       <button id="fsDismiss" class="btn">Dismiss</button>
     </div>
+
+    <!-- D1 Debug overlay (OBD table) -->
+    <div id="debugPanel" class="debug-panel hidden">
+      <div class="debug-header">
+        <strong>System Debug</strong>
+        <button id="closeDebug" class="icon-btn"><i data-feather="x"></i></button>
+      </div>
+      <div class="debug-body">
+        <div class="card"><pre id="osMeta">meta: (not loaded)</pre></div>
+        <div class="card">
+          <h3 class="h3">Error feed (auto)</h3>
+          <table class="dbg-table" id="errorTable">
+            <thead><tr><th>Time</th><th>Type</th><th>Message</th><th>Source</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="card">
+          <h3 class="h3">Last Fetch</h3>
+          <pre id="lastFetch">none</pre>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <!-- App logic -->
   <script type="module" src="./app.js"></script>
   <script>
-    // Activate feather icons after DOM
-    document.addEventListener('DOMContentLoaded', () => {
-      if (window.feather) window.feather.replace();
-    });
+    document.addEventListener('DOMContentLoaded', ()=> { if (window.feather) window.feather.replace(); });
   </script>
 </body>
 </html>
