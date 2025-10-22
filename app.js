@@ -1,5 +1,5 @@
-// app.js — Adds /editor/ (E2-A tabs: Editor/Preview/AI), /guide/, PV1 full-page preview,
-// keeps C (relative CDN), F2 strict loader, TB2, D1 debug overlay.
+// app.js — CDN alias + image route fix, /editor/ (E2-A), /guide/, PV1 full preview,
+// relative CDN (C), strict loader (F2), TB2, D1 debug overlay.
 
 import { publishAppJson } from './publish.js';
 
@@ -10,7 +10,25 @@ const USERS_BASE = `${CDN}/users`;
 let channel = "latest";
 let os;
 
-// DOM refs
+// ---------- CDN alias resolver ----------
+function detectCdnBase() {
+  // On GitHub Pages, the app is served under /<repo>; on custom domains it's root.
+  if (location.hostname.endsWith('github.io')) {
+    const seg = location.pathname.split('/').filter(Boolean)[0] || '';
+    return `${location.origin}/${seg}`;
+  }
+  // Custom domain or local: use origin root
+  return `${location.origin}`;
+}
+const CDN_BASE = detectCdnBase();
+// @cdn/foo.png -> https://host/repo/foo.png  (GH Pages)  OR  https://domain/foo.png (custom)
+function resolveCDN(path) {
+  if (typeof path !== 'string') return path;
+  if (path.startsWith('@cdn/')) return `${CDN_BASE}/${path.slice(5)}`;
+  return path;
+}
+
+// ---------- DOM refs ----------
 const mainEl = document.getElementById('main');
 const chips = [...document.querySelectorAll('.chip')];
 const qEl = document.getElementById('q');
@@ -27,14 +45,14 @@ const fsOffer = document.getElementById('fsOffer');
 const fsGo = document.getElementById('fsGo');
 const fsDismiss = document.getElementById('fsDismiss');
 
-// utils
+// ---------- utils ----------
 const ensureSlash = p => (p.endsWith('/') ? p : p + '/');
 const isSubdomain = () => location.hostname.endsWith('.' + MAIN_HOST) && location.hostname !== MAIN_HOST;
 const subdomainUid = () => (isSubdomain() ? location.hostname.split('.')[0] : null);
 function escapeHTML(s){ return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 function debounce(fn, ms=250){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), ms); }; }
 
-// error feed
+// ---------- error feed ----------
 function pushErr(type, msg, src){
   if (!errorTable) return;
   const row = document.createElement('tr');
@@ -45,7 +63,7 @@ function pushErr(type, msg, src){
 window.addEventListener('error', (e)=> pushErr('error', e.message, e.filename||'' ));
 window.addEventListener('unhandledrejection', (e)=> pushErr('unhandledrejection', String(e.reason||'promise'), '' ));
 
-// minimal JSON runtime
+// ---------- minimal JSON runtime ----------
 function renderJsonApp(mount, spec) {
   if (!mount) return;
   const state = { ...(spec.state||{}) };
@@ -70,7 +88,7 @@ function renderJsonApp(mount, spec) {
     if (n.type==='col') return `<div style="display:flex;flex-direction:column;gap:8px">${(n.children||[]).map(nodeToHTML).join('')}</div>`;
     if (n.type==='text') return `<div style="padding:8px 0">${escapeHTML(resolve(n.value))}</div>`;
     if (n.type==='button') return `<button class="btn" data-action="${n.action||''}" style="margin:4px 0">${escapeHTML(resolve(n.label||'Button'))}</button>`;
-    if (n.type==='image') return `<img src="${resolve(n.src)}" alt="" style="max-width:100%;border-radius:10px;border:1px solid #172231">`;
+    if (n.type==='image') return `<img src="${resolve(resolveCDN(n.src))}" alt="" style="max-width:100%;border-radius:10px;border:1px solid #172231">`;
     return `<div class="small muted">Unknown node: ${escapeHTML(n.type||'')}</div>`;
   }
   function resolve(v){ return (typeof v==='string') ? v.replace(/\$\{state\.([a-zA-Z0-9_]+)\}/g,(_,k)=> state[k]) : v; }
@@ -81,7 +99,6 @@ function renderJsonApp(mount, spec) {
   }
 }
 window.applySpec = function(spec){
-  // used by AI later — for now editor handles updates
   try{
     const wrap = document.createElement('div');
     wrap.className = 'card';
@@ -91,17 +108,19 @@ window.applySpec = function(spec){
   }catch(e){ pushErr('applySpec', e.message, 'applySpec'); alert('Invalid JSON'); }
 };
 
-// routing
+// ---------- routing ----------
 function goto(route){ route = ensureSlash(route); history.pushState({},'',route); render(route); }
 window.addEventListener('popstate', ()=> { if (!isSubdomain()) render(location.pathname); });
 
 function section(title, content){ return `<div class="section"><div class="card"><h3 class="h3">${title}</h3>${content}</div></div>`; }
+
 function tile(item, onClick){
-  const art = item.art || `https://picsum.photos/seed/xjson/640/360`;
+  const art = resolveCDN(item.art || `@cdn/art/placeholder-640x360.png`);
   return `<div class="tile" onclick="${onClick||''}">
     <img src="${art}" alt=""><div class="meta"><span>${item.title}</span><span class="small muted">${item.tag||''}</span></div></div>`;
 }
 function grid(list, clickMaker){ return `<div class="tilegrid">${(list||[]).map(i=>tile(i, clickMaker? clickMaker(i):'')).join('')}</div>`; }
+
 function hero(){
   const h = os.hero || { title:'Welcome to XJSON', subtitle:'Build games with JSON. Launch anything.' };
   return `<div class="section"><div class="card"><h3 class="h3">${h.title}</h3><div class="small muted">${h.subtitle}</div>
@@ -169,7 +188,6 @@ function render(pathname){
     return;
   }
   else if (path==='/editor/'){
-    // Full page editor with tabs: Editor / Preview / AI (placeholder)
     html += `
       <div class="card">
         <div class="ed-tabs">
@@ -198,8 +216,6 @@ function render(pathname){
     const edTarget = document.getElementById('edTarget');
     const options = (os.apps||[]).filter(a=>a.type==='json').map(a=>`<option value="${a.id}">${a.title}</option>`).join('');
     edTarget.innerHTML = `<option value="">Select JSON App…</option>${options}`;
-
-    // default to first json app
     const first = (os.apps||[]).find(a=>a.type==='json');
     if (first){ edTarget.value = first.id; document.getElementById('edText').value = JSON.stringify(first.spec||{}, null, 2); }
 
@@ -214,13 +230,12 @@ function render(pathname){
       panelEditor.classList.toggle('show', b.dataset.edtab==='editor');
       panelPreview.classList.toggle('show', b.dataset.edtab==='preview');
       panelAI.classList.toggle('show', b.dataset.edtab==='ai');
-      if (b.dataset.edtab==='preview') refreshPreview(); // make sure it shows current
+      if (b.dataset.edtab==='preview') refreshPreview();
     }));
 
     // auto preview (P-A) with debounce
     const edText = document.getElementById('edText');
     edText.addEventListener('input', debounce(()=> {
-      // if user is on preview tab, refresh live
       if (panelPreview.classList.contains('show')) refreshPreview();
     }, 250));
 
@@ -233,6 +248,8 @@ function render(pathname){
     function refreshPreview(){
       try{
         const spec = JSON.parse(document.getElementById('edText').value||'{}');
+        // resolve @cdn inside image nodes before preview render happens (runtime already resolves, but this ensures)
+        (spec.scene||[]).forEach(n => { if (n.type==='image' && typeof n.src==='string' && n.src.startsWith('@cdn/')) n.src = resolveCDN(n.src); });
         const m = document.getElementById('edPreviewMount');
         m.innerHTML = '';
         const wrap = document.createElement('div');
@@ -242,7 +259,6 @@ function render(pathname){
       }catch(e){ alert('Invalid JSON: ' + e.message); }
     }
 
-    // publish current json to users/<uid>/apps/<id>/app.json
     document.getElementById('edPublish').addEventListener('click', async ()=>{
       const uid = window.CURRENT_UID || subdomainUid() || prompt('Your UID:');
       const token = localStorage.getItem('xjson.admin.pat')||'';
@@ -256,17 +272,16 @@ function render(pathname){
       }catch(e){ alert('Publish failed: ' + e.message); }
     });
 
-    return; // stop normal render
+    return;
   }
   else {
-    // stable/nightly unknown subroutes: show graceful message
     html += section('Not found', `<div class="small muted">Route ${path} not found.</div>`);
   }
 
   mainEl.innerHTML = html;
 }
 
-// launchers
+// ---------- launchers ----------
 window.launch = (id)=>{
   const app = (os.apps||[]).find(a=>a.id===id);
   if (!app) return alert('App not found: ' + id);
@@ -277,21 +292,22 @@ window.launch = (id)=>{
     mainEl.innerHTML=''; mainEl.appendChild(wrap);
     renderJsonApp(document.getElementById('jsonAppMount'), app.spec||{});
   } else if (app.type==='iframe'){
+    const src = resolveCDN(app.src || '');
     mainEl.innerHTML = `<div class="card"><h3 class="h3">${app.title}</h3>
-    <iframe src="${app.src}" style="width:100%;height:72vh;border:0;border-radius:10px;background:#0b0f14"></iframe></div>`;
+    <iframe src="${src}" style="width:100%;height:72vh;border:0;border-radius:10px;background:#0b0f14"></iframe></div>`;
   } else {
     alert('Unknown app type: ' + app.type);
   }
 };
 
-// channels & search
+// ---------- channels & search ----------
 chips.forEach(c=> c.addEventListener('click', async ()=>{
   channel = c.dataset.channel; chips.forEach(x=>x.classList.toggle('active', x===c));
   await bootMain();
 }));
 qEl?.addEventListener('input', ()=> { if (!isSubdomain()) render(location.pathname); });
 
-// sidebar routing
+// ---------- sidebar routing ----------
 navBtns.forEach(b=>{
   const r = b.dataset.route;
   if (!r) return;
@@ -299,7 +315,7 @@ navBtns.forEach(b=>{
   if (b.dataset.title) b.title = b.dataset.title;
 });
 
-// fullscreen offer
+// ---------- fullscreen prompt ----------
 function offerFullscreenFor20s(){
   if (!fsOffer) return;
   fsOffer.classList.remove('hidden');
@@ -312,7 +328,7 @@ function offerFullscreenFor20s(){
   fsDismiss.onclick = ()=> { fsOffer.classList.add('hidden'); clearTimeout(t); };
 }
 
-// strict OS loader (F2)
+// ---------- OS loader (F2 strict) ----------
 async function loadOS(ch){
   const url = `./${ch}/os.json`;
   lastFetchPre && (lastFetchPre.textContent = `GET ${url}`);
@@ -354,13 +370,13 @@ async function bootUser(){
   offerFullscreenFor20s();
 }
 
-// debug overlay toggle
+// ---------- debug overlay ----------
 debugBtn?.addEventListener('click', ()=> debugPanel.classList.toggle('hidden'));
 closeDebug?.addEventListener('click', ()=> debugPanel.classList.add('hidden'));
 
-// start
+// ---------- start ----------
 if (isSubdomain()) { bootUser().catch(e=>pushErr('bootUser', e.message, 'boot')); }
 else { bootMain().catch(e=>pushErr('bootMain', e.message, 'boot')); }
 
-// SW
+// ---------- SW ----------
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
