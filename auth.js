@@ -33,7 +33,7 @@ export function initGoogleSignIn({ buttonId = 'googleBtn', onSignedIn }) {
       return setTimeout(tryRender, 300);
     }
     google.accounts.id.initialize({
-      client_id: 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com',
+      client_id: '1007325672364-6qjijd29ilv4e38jh8ohfioso73bmavt.apps.googleusercontent.com',
       callback: window.handleGsi
     });
     const btn = document.getElementById(buttonId);
