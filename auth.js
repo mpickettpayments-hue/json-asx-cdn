@@ -1,43 +1,59 @@
 // auth.js
 // Google Sign-In (client-only) + UID-C generator (u_<namehint>_<4char>)
+
 export function decodeJwtResponse(token) {
-  // minimal client decode (MVP). For production, verify on server.
   const payload = token.split('.')[1];
   return JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
 }
 
 export function makeUidC(email) {
   const base = email.split('@')[0].toLowerCase()
-    .replace(/[^a-z0-9-_.]/g, '-')  // sanitize
-    .replace(/^-+|-+$/g,'')         // trim dashes
-    .slice(0,12) || 'user';
-  const rand = Math.random().toString(36).slice(2,6);
+    .replace(/[^a-z0-9-_.]/g, '-')   // sanitize
+    .replace(/^-+|-+$/g, '')         // trim leading/trailing dashes
+    .slice(0, 12) || 'user';
+  const rand = Math.random().toString(36).slice(2, 6);
   return `u_${base}_${rand}`;
 }
 
-// Renders Google button and resolves user { email, uid }
-export function initGoogleSignIn({ buttonId = 'googleBtn', onSignedIn }) {
+/**
+ * Initializes Google Sign-In and resolves user { email, uid, claims }
+ * @param {Object} opts
+ * @param {string} opts.buttonId - DOM ID of the Google Sign-In button
+ * @param {Function} opts.onSignedIn - Callback with { email, uid, claims }
+ * @param {string} opts.clientId - Google OAuth client ID
+ */
+export function initGoogleSignIn({ buttonId = 'googleBtn', onSignedIn, clientId }) {
+  if (!clientId) {
+    console.error('Google Sign-In: Missing clientId');
+    return;
+  }
+
   window.handleGsi = (resp) => {
     try {
       const claims = decodeJwtResponse(resp.credential);
       const email = claims.email;
       const uid = makeUidC(email);
+      window.CURRENT_UID = uid;
       onSignedIn({ email, uid, claims });
     } catch (e) {
       alert('Sign-in failed: ' + e.message);
     }
   };
-  // Defer until GIS is loaded
-  const tryRender = () => {
-    if (!window.google || !google.accounts || !google.accounts.id) {
-      return setTimeout(tryRender, 300);
-    }
+
+  const waitForGsi = () => {
+    if (!window.google?.accounts?.id) return setTimeout(waitForGsi, 200);
     google.accounts.id.initialize({
-      client_id: '1007325672364-6qjijd29ilv4e38jh8ohfioso73bmavt.apps.googleusercontent.com',
+      client_id: clientId,
       callback: window.handleGsi
     });
+
     const btn = document.getElementById(buttonId);
-    if (btn) google.accounts.id.renderButton(btn, { theme: 'outline', size: 'large' });
+    if (btn) {
+      google.accounts.id.renderButton(btn, { theme: 'outline', size: 'large' });
+    } else {
+      console.warn(`Google Sign-In: Button with ID "${buttonId}" not found`);
+    }
   };
-  tryRender();
+
+  waitForGsi();
 }
