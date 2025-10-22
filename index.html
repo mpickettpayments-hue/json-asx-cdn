@@ -10,7 +10,6 @@
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://unpkg.com/feather-icons/dist/feather.min.js" defer></script>
   <style>
-    /* tiny additions for editor tabs */
     .ed-tabs{display:flex;gap:8px;margin-bottom:10px}
     .ed-tab{background:#0f1720;border:1px solid #1b2940;color:#cfe3f4;border-radius:8px;padding:8px 12px;cursor:pointer}
     .ed-tab.active,.ed-tab:hover{background:#142438;border-color:#244b71}
@@ -21,11 +20,10 @@
 </head>
 <body>
   <div id="appRoot" class="shell">
-    <!-- Sidebar (L1: logo here only) -->
+    <!-- Sidebar with dynamic logo (L1) -->
     <aside class="sidebar">
       <div class="brand">
-        <!-- Tries logo.png, then icon-192.png, then json-asx.jpg -->
-        <img id="brandLogo" src="./logo.png" alt="XJSON" onerror="this.onerror=null;this.src='./icon-192.png';">
+        <img id="brandLogo" alt="XJSON" />
       </div>
       <nav class="nav">
         <button class="nav-btn" data-route="/" data-title="Home"><i data-feather="home"></i></button>
@@ -34,14 +32,12 @@
         <button class="nav-btn" data-route="/downloads/" data-title="Downloads"><i data-feather="download"></i></button>
         <button class="nav-btn" data-route="/settings/" data-title="Settings"><i data-feather="settings"></i></button>
         <div class="spacer"></div>
-        <!-- Editor route button (E2) -->
         <button class="nav-btn" data-route="/editor/" data-title="Editor"><i data-feather="code"></i></button>
-        <!-- Guide -->
         <button class="nav-btn" data-route="/guide/" data-title="User Guide"><i data-feather="book"></i></button>
       </nav>
     </aside>
 
-    <!-- Topbar TB2 -->
+    <!-- TB2 -->
     <header class="topbar">
       <div class="channels">
         <span class="chip active" data-channel="latest">latest</span>
@@ -57,19 +53,18 @@
       </div>
     </header>
 
-    <!-- Main content -->
     <main id="main" class="content">
       <div class="boot-msg">Loading XJSON…</div>
     </main>
 
-    <!-- Fullscreen prompt (subdomains) -->
+    <!-- Fullscreen prompt -->
     <div id="fsOffer" class="fs-offer hidden">
       <span>Tip: Fullscreen for best experience</span>
       <button id="fsGo" class="btn">Go Fullscreen</button>
       <button id="fsDismiss" class="btn">Dismiss</button>
     </div>
 
-    <!-- Debug overlay (unchanged API) -->
+    <!-- Debug overlay -->
     <div id="debugPanel" class="debug-panel hidden">
       <div class="debug-header">
         <strong>System Debug</strong>
@@ -95,6 +90,22 @@
   <!-- App logic -->
   <script type="module" src="./app.js"></script>
   <script>
+    // Dynamic logo that is safe on GH Pages subpaths & custom domains
+    (function(){
+      function repoBasePath(){
+        if (location.hostname.endsWith('github.io')) {
+          const seg = location.pathname.split('/').filter(Boolean)[0] || '';
+          return `/${seg}`;
+        }
+        return ''; // custom domains: root
+      }
+      const base = repoBasePath();
+      const logo = document.getElementById('brandLogo');
+      if (logo) {
+        logo.src = `${base}/logo.png`;
+        logo.onerror = ()=> { logo.onerror=null; logo.src = `${base}/icon-192.png`; };
+      }
+    })();
     document.addEventListener('DOMContentLoaded', ()=> { if (window.feather) window.feather.replace(); });
   </script>
 </body>
