@@ -141,3 +141,17 @@ body{margin:0;background:#06090d;color:var(--text);font-family:Inter,system-ui,S
   .search{display:none}
   .pat{width:150px}
 }
+/* --- File Tree + Modal minimal additions (P3 FT-C) --- */
+.files-panel { border:1px solid #1b2940;border-radius:10px;background:#0e1520;max-height:70vh;overflow:auto }
+.files-head { display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-bottom:1px solid #1b2940 }
+.files-title { font-weight:600 }
+.files-list { padding:6px 10px }
+.fitem { padding:6px 6px;border-radius:6px;cursor:pointer;font-size:14px }
+.fitem.active,.fitem:hover { background:#132033 }
+.fdir { font-weight:600;margin-top:6px }
+.fchildren { padding-left:12px }
+.modal-mask { position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:50 }
+.modal-mask.show { display:flex }
+.modal { background:#0e1520;border:1px solid #1b2940;border-radius:12px;max-width:520px;width:92%;padding:16px }
+.modal h3 { margin:0 0 10px }
+.modal .actions { display:flex;gap:8px;justify-content:flex-end;margin-top:12px }
