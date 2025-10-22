@@ -155,3 +155,16 @@ body{margin:0;background:#06090d;color:var(--text);font-family:Inter,system-ui,S
 .modal { background:#0e1520;border:1px solid #1b2940;border-radius:12px;max-width:520px;width:92%;padding:16px }
 .modal h3 { margin:0 0 10px }
 .modal .actions { display:flex;gap:8px;justify-content:flex-end;margin-top:12px }
+
+/* TD basics */
+.td-stage { position:relative }
+.td-spots { position:absolute; inset:0; pointer-events:none }
+.td-spot { position:absolute; width:28px; height:28px; border-radius:50%;
+  border:1px solid #1b2940; background:#0e1520; color:#9feb9f; cursor:pointer;
+  transform:translate(-50%,-50%); pointer-events:auto }
+.td-hud { position:absolute; top:8px; left:8px; right:8px; display:flex; gap:8px; justify-content:flex-start; pointer-events:none }
+.hud-wrap { display:flex; gap:8px }
+.hud-badge { pointer-events:auto; background:#0f1720; border:1px solid #1b2940; border-radius:10px; padding:6px 10px; min-width:84px }
+.hud-k { font-size:11px; color:#9fb8ce }
+.hud-v { font-weight:700; color:#d9ffe0 }
+.td-ui { position:absolute; bottom:10px; left:10px; right:10px; display:flex; gap:10px; justify-content:flex-start }
