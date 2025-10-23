@@ -805,40 +805,454 @@ Click **Publish** → deploys to your subdomain.
 * Enter your **LangFlow endpoint** in the AI tab.
 * Type how you want the game to change (e.g., *“Add a Start button that sets score to 0 and show a large header”*).
 * The AI returns an updated JSON spec → we **apply** it to the Editor and Preview. No giant code paste.
-Persistence
 
-Likes, Pins, Comments are stored local (Phase 1).
 
-Upgrade path: write a thin vault adapter later.
+Absolutely. Shipping the **3-file pack** with your final label **SB-E = “INSERT”** and the **HL-C micro-blog + Docking Station** UX.
 
-Keyboard
+---
 
-Up/Down scroll.
+# `retro-start-screen.asx.json`
 
-Enter on focused card → DOCK.
+*(Strict XJSON/ASX: UI + State + Actions; HL-C list + Dock top banner; button label = INSERT)*
 
-Space on Dock → START.
+```json
+{
+  "@asx": "1.0.0",
+  "@scene": "retro-start-screen",
+  "@engine": "json-2d",
+  "@theme": {
+    "mode": "glass-black",
+    "primary": "#00ff6a",
+    "accent": "#00f0ff",
+    "muted": "#9aa",
+    "surface": "rgba(0,0,0,0.72)",
+    "particleGlow": true
+  },
 
-ESC → back to HUD shell.
+  "@state": {
+    "dock": null,
+    "selectedRomId": null,
+    "likes": {},
+    "pins": {},
+    "comments": {},
+    "registryUrl": "./os/arcade-registry.json",
+    "roms": []
+  },
 
-LLM Prompts (for AI agents)
+  "@data": [
+    {
+      "id": "registry",
+      "type": "json",
+      "src": "${state.registryUrl}",
+      "into": "state.roms",
+      "map": "roms"
+    }
+  ],
 
-Generate a new holotape card for the feed with fields: id, title, desc, thumb, badge, genre, engine, version, file
+  "@ui": {
+    "type": "column",
+    "style": {
+      "gap": 14,
+      "pad": 16,
+      "backdrop": "particles", 
+      "height": "100vh",
+      "overflow": "hidden"
+    },
+    "children": [
+      {
+        "id": "dockBanner",
+        "type": "container",
+        "style": {
+          "display": "grid",
+          "gridTemplateColumns": "92px 1fr auto",
+          "alignItems": "center",
+          "gap": 12,
+          "pad": 12,
+          "border": "1px solid rgba(255,255,255,0.06)",
+          "radius": 12,
+          "background": "linear-gradient(180deg, rgba(10,10,10,0.65), rgba(0,0,0,0.55))",
+          "shadow": "0 20px 80px rgba(0,0,0,0.45)"
+        },
+        "children": [
+          {
+            "type": "image",
+            "src": "${state.dock?.thumb || './public/placeholders/holotape.png'}",
+            "style": { "width": 92, "height": 92, "radius": 10, "border": "1px solid rgba(255,255,255,0.06)", "objectFit": "cover" }
+          },
+          {
+            "type": "vstack",
+            "style": { "gap": 6 },
+            "children": [
+              {
+                "type": "text",
+                "value": "${state.dock ? state.dock.title : 'HOLOTAPE DOCK'}",
+                "style": { "size": 18, "weight": 700, "color": "#c8ffd7", "letterSpacing": 0.4 }
+              },
+              {
+                "type": "text",
+                "value": "${state.dock ? 'HOLOTAPE READY' : 'LOAD HOLOTAPE'}",
+                "style": { "size": 12, "color": "${state.dock ? '#00ff6a' : '#9aa'}" }
+              },
+              {
+                "type": "text",
+                "value": "${state.dock?.desc || 'Insert a holotape from the feed below to begin.'}",
+                "style": { "size": 12, "color": "#9aa" }
+              }
+            ]
+          },
+          {
+            "type": "hstack",
+            "style": { "gap": 8 },
+            "children": [
+              {
+                "id": "btnInsert",
+                "type": "button",
+                "label": "INSERT",
+                "disabled": "${!state.selectedRomId}",
+                "onClick": "dockSelected",
+                "style": {
+                  "pad": "10px 16px",
+                  "radius": 10,
+                  "bg": "linear-gradient(180deg, rgba(0,255,106,0.18), rgba(0,0,0,0.1))",
+                  "border": "1px solid rgba(0,255,106,0.35)",
+                  "color": "#00ff6a",
+                  "glow": true
+                }
+              },
+              {
+                "id": "btnStart",
+                "type": "button",
+                "label": "START",
+                "disabled": "${!state.dock}",
+                "onClick": "startDocked",
+                "style": {
+                  "pad": "10px 16px",
+                  "radius": 10,
+                  "bg": "linear-gradient(180deg, rgba(0,240,255,0.18), rgba(0,0,0,0.1))",
+                  "border": "1px solid rgba(0,240,255,0.35)",
+                  "color": "#00f0ff"
+                }
+              }
+            ]
+          }
+        ]
+      },
 
-Add roms[] entry to os/arcade-registry.json with unique id and valid file path.
+      {
+        "type": "spacer",
+        "style": { "h": 8 }
+      },
 
-Ensure thumb is a valid URL or a /public/ asset; never inline 10MB data URLs.
+      {
+        "id": "feedList",
+        "type": "scroll",
+        "style": { "flex": 1, "radius": 12, "border": "1px solid rgba(255,255,255,0.06)", "pad": 12, "overflow": "auto" },
+        "forEach": {
+          "of": "${state.roms}",
+          "as": "rom",
+          "key": "${rom.id}",
+          "item": {
+            "type": "container",
+            "style": {
+              "display": "grid",
+              "gridTemplateColumns": "120px 1fr auto",
+              "alignItems": "center",
+              "gap": 14,
+              "pad": 12,
+              "radius": 10,
+              "border": "1px solid rgba(255,255,255,0.05)",
+              "background": "linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.08))",
+              "hoverGlow": true,
+              "marginBottom": 10
+            },
+            "children": [
+              {
+                "type": "image",
+                "src": "${rom.thumb || './public/placeholders/rom.png'}",
+                "alt": "${rom.title}",
+                "style": { "width": 120, "height": 90, "radius": 8, "border": "1px solid rgba(255,255,255,0.06)", "objectFit": "cover" }
+              },
+              {
+                "type": "vstack",
+                "style": { "gap": 6 },
+                "children": [
+                  {
+                    "type": "hstack",
+                    "style": { "gap": 8, "align": "center" },
+                    "children": [
+                      { "type": "text", "value": "${rom.title}", "style": { "size": 16, "weight": 700, "color": "#eaffea" } },
+                      { "type": "badge", "text": "${rom.badge || 'ROM'}", "style": { "color": "#00ff6a", "border": "1px solid rgba(0,255,106,0.35)" } }
+                    ]
+                  },
+                  { "type": "text", "value": "${rom.desc || ''}", "style": { "size": 12, "color": "#9aa" } },
+                  {
+                    "type": "hstack",
+                    "style": { "gap": 10, "wrap": true },
+                    "children": [
+                      { "type": "tag", "text": "${rom.genre || 'Arcade'}" },
+                      { "type": "tag", "text": "${rom.engine || 'json-2d'}" },
+                      { "type": "tag", "text": "v${rom.version || '1.0'}" }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "vstack",
+                "style": { "gap": 8, "align": "end" },
+                "children": [
+                  {
+                    "type": "hstack",
+                    "style": { "gap": 8 },
+                    "children": [
+                      {
+                        "type": "button",
+                        "label": "DOCK",
+                        "onClick": "selectRom",
+                        "args": { "id": "${rom.id}" },
+                        "style": {
+                          "pad": "8px 12px",
+                          "radius": 10,
+                          "bg": "transparent",
+                          "border": "1px dashed rgba(0,255,106,0.35)",
+                          "color": "#00ff6a"
+                        }
+                      },
+                      {
+                        "type": "button",
+                        "label": "PLAY",
+                        "onClick": "quickStart",
+                        "args": { "id": "${rom.id}" },
+                        "style": {
+                          "pad": "8px 12px",
+                          "radius": 10,
+                          "bg": "transparent",
+                          "border": "1px solid rgba(0,240,255,0.35)",
+                          "color": "#00f0ff"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "hstack",
+                    "style": { "gap": 8, "align": "center" },
+                    "children": [
+                      {
+                        "type": "iconButton",
+                        "icon": "thumbs-up",
+                        "active": "${state.likes[rom.id] === true}",
+                        "onClick": "toggleLike",
+                        "args": { "id": "${rom.id}" },
+                        "style": { "color": "${state.likes[rom.id] ? '#00ff6a' : '#9aa'}" }
+                      },
+                      {
+                        "type": "iconButton",
+                        "icon": "message-circle",
+                        "onClick": "openComments",
+                        "args": { "id": "${rom.id}" },
+                        "style": { "color": "#9aa" }
+                      },
+                      {
+                        "type": "iconButton",
+                        "icon": "pin",
+                        "active": "${state.pins[rom.id] === true}",
+                        "onClick": "togglePin",
+                        "args": { "id": "${rom.id}" },
+                        "style": { "color": "${state.pins[rom.id] ? '#00ff6a' : '#9aa'}" }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
 
-Respect minimal neon-glass style; avoid heavy backgrounds; keep buttons outlined.
+  "@actions": {
+    "selectRom": [
+      { "set": "state.selectedRomId", "to": "${args.id}" }
+    ],
+    "dockSelected": [
+      { "let": { "id": "${state.selectedRomId}" } },
+      { "guard": "${!!let.id}", "then": [
+        { "let": { "rom": "${state.roms.find(r=>r.id===let.id)}" } },
+        { "set": "state.dock", "to": "${let.rom}" }
+      ]}
+    ],
+    "startDocked": [
+      { "guard": "${!!state.dock}", "then": [
+        { "call": "arcade.play", "args": { "id": "${state.dock.id}" } }
+      ]}
+    ],
+    "quickStart": [
+      { "call": "arcade.play", "args": { "id": "${args.id}" } }
+    ],
+    "toggleLike": [
+      {
+        "set": "state.likes[${args.id}]",
+        "to": "${state.likes[args.id] ? false : true}",
+        "persist": "local"
+      }
+    ],
+    "togglePin": [
+      {
+        "set": "state.pins[${args.id}]",
+        "to": "${state.pins[args.id] ? false : true}",
+        "persist": "local"
+      }
+    ],
+    "openComments": [
+      {
+        "modal": {
+          "title": "Comments — ${state.roms.find(r=>r.id===args.id)?.title || args.id}",
+          "size": "lg",
+          "content": {
+            "type": "comments",
+            "model": "state.comments[${args.id}]",
+            "onSubmit": "saveComment",
+            "args": { "id": "${args.id}" }
+          }
+        }
+      }
+    ],
+    "saveComment": [
+      {
+        "push": "state.comments[${args.id}]",
+        "value": { "ts": "${Date.now()}", "text": "${args.text}" },
+        "persist": "local"
+      }
+    ]
+  },
 
-Don’ts
+  "@wires": [
+    { "when": "mounted", "do": [ { "fetch": "registry" } ] }
+  ]
+}
+```
 
-Do not modify the sealed boot or HUD shell.
+---
 
-Do not inline huge assets in the start screen JSON.
+# `retro-start-screen.NOTES.md`
 
-Do not write tokens into JSON; use modal/secure store.
+*(Builder notes, style rules, and LLM prompts for agents)*
 
+````md
+# Retro Start Screen — Notes for Builders & Bots
+
+## Visual DNA
+- **BG-B**: Pure black glass, particle glow.
+- Neon green primary `#00ff6a`, cyan accent `#00f0ff`.
+- Cards use subtle glass gradients + 1px borders.
+- Buttons: bordered neon, not filled; hover → glow.
+- Feed = **single-column micro-blog**; each entry = holotape card.
+
+## Behavior
+- Top **Docking Station** shows "HOLOTAPE READY" when a ROM is docked; otherwise "LOAD HOLOTAPE".
+- **INSERT** button docks the *selected* ROM.
+- **START** button only active when docked.
+- Feed actions: **DOCK**, **PLAY**, **Like**, **Pin**, **Comments**.
+
+## Data
+- Loads `./os/arcade-registry.json` → expects:
+  ```json
+  { "roms": [ { "id": "surf-bros", "title": "Surf Bros", "thumb": "...", "desc": "...", "file": "/holotapes/surf-bros.json" } ] }
+````
+
+* `arcade.play({ id })` must exist in the environment (your `arcade-loader.js`).
+
+## Persistence
+
+* Likes, Pins, Comments are stored **local** (Phase 1).
+* Upgrade path: write a thin vault adapter later.
+
+## Keyboard
+
+* Up/Down scroll.
+* Enter on focused card → DOCK.
+* Space on Dock → START.
+* ESC → back to HUD shell.
+
+## LLM Prompts (for AI agents)
+
+* *Generate a new holotape card for the feed with fields: `id, title, desc, thumb, badge, genre, engine, version, file`*
+* *Add `roms[]` entry to `os/arcade-registry.json` with unique `id` and valid `file` path.*
+* *Ensure `thumb` is a valid URL or a `/public/` asset; never inline 10MB data URLs.*
+* *Respect minimal neon-glass style; avoid heavy backgrounds; keep buttons outlined.*
+
+## Don’ts
+
+* Do not modify the sealed boot or HUD shell.
+* Do not inline huge assets in the start screen JSON.
+* Do not write tokens into JSON; use modal/secure store.
+
+````
+
+---
+
+# `retro-start-screen.logic.md`
+*(MVC wiring: events, state, and how it calls the Arcade loader)*
+
+```md
+# Retro Start Screen — Logic & MVC
+
+## State
+- `state.roms`: Array of registry items from `/os/arcade-registry.json` (`map: "roms"`).
+- `state.selectedRomId`: Set by DOCK (select) action.
+- `state.dock`: The active ROM object shown in the Docking Station.
+- `state.likes`, `state.pins`, `state.comments`: maps keyed by `rom.id` (persist: local).
+
+## Actions
+- `selectRom({ id })`: sets `state.selectedRomId`.
+- `dockSelected()`: finds ROM by `selectedRomId` and writes to `state.dock`.
+- `startDocked()`: guard `state.dock != null` → calls `arcade.play({ id: state.dock.id })`.
+- `quickStart({ id })`: calls `arcade.play({ id })` (bypass dock).
+- `toggleLike({ id })`, `togglePin({ id })`: local toggle & persist.
+- `openComments({ id })`: opens modal bound to `state.comments[id]`.
+- `saveComment({ id, text })`: appends to `state.comments[id]` and persists.
+
+## Lifecycle
+- `mounted` → `fetch: registry` → populates `state.roms`.
+- UI auto-renders feed cards via `forEach`.
+
+## External Contract (Arcade Loader)
+Your runtime must expose:
+```js
+arcade.play = async ({ id }) => {
+  // 1) lookup id in registry (already in state or refetch)
+  // 2) fetch /holotapes/<id>.json
+  // 3) initialize engine canvas & loop (init/update/render)
+  // 4) handle ESC → restore Retro Start Screen scene
+};
+````
+
+## Navigation
+
+* Entry route: `/arcade` → this scene.
+* `ESC` in ROM: returns to `/arcade`.
+* `ESC` in `/arcade`: returns to HUD shell.
+
+## Accessibility
+
+* Each card = button cluster with labels; tab order:
+
+  * DOCK → PLAY → reactions.
+* Dock buttons:
+
+  * **INSERT** enables when `selectedRomId != null`
+  * **START** enables when `dock != null`
+* Announce Dock state changes via ARIA live region (add if desired).
+
+```
+
+---
+
+### What’s next
+- I can wire this scene into your current routes as `/arcade` (or `/start`) immediately, integrate with your **Surf Bros** holotape, and reseal the HUD boot (`index.b44` + `index.sig`) so the reticle launches straight here.
+- Want me to drop a tiny `arcade-registry.json` sample with Surf Bros and one stub ROM so the feed isn’t empty on first boot?
+::contentReference[oaicite:0]{index=0}
+```
 
 ---
 
