@@ -805,7 +805,77 @@ Click **Publish** → deploys to your subdomain.
 * Enter your **LangFlow endpoint** in the AI tab.
 * Type how you want the game to change (e.g., *“Add a Start button that sets score to 0 and show a large header”*).
 * The AI returns an updated JSON spec → we **apply** it to the Editor and Preview. No giant code paste.
+Persistence
 
+Likes, Pins, Comments are stored local (Phase 1).
+
+Upgrade path: write a thin vault adapter later.
+
+Keyboard
+
+Up/Down scroll.
+
+Enter on focused card → DOCK.
+
+Space on Dock → START.
+
+ESC → back to HUD shell.
+
+LLM Prompts (for AI agents)
+
+Generate a new holotape card for the feed with fields: id, title, desc, thumb, badge, genre, engine, version, file
+
+Add roms[] entry to os/arcade-registry.json with unique id and valid file path.
+
+Ensure thumb is a valid URL or a /public/ asset; never inline 10MB data URLs.
+
+Respect minimal neon-glass style; avoid heavy backgrounds; keep buttons outlined.
+
+Don’ts
+
+Do not modify the sealed boot or HUD shell.
+
+Do not inline huge assets in the start screen JSON.
+
+Do not write tokens into JSON; use modal/secure store.
+
+
+---
+
+# `retro-start-screen.logic.md`
+*(MVC wiring: events, state, and how it calls the Arcade loader)*
+
+```md
+# Retro Start Screen — Logic & MVC
+
+## State
+- `state.roms`: Array of registry items from `/os/arcade-registry.json` (`map: "roms"`).
+- `state.selectedRomId`: Set by DOCK (select) action.
+- `state.dock`: The active ROM object shown in the Docking Station.
+- `state.likes`, `state.pins`, `state.comments`: maps keyed by `rom.id` (persist: local).
+
+## Actions
+- `selectRom({ id })`: sets `state.selectedRomId`.
+- `dockSelected()`: finds ROM by `selectedRomId` and writes to `state.dock`.
+- `startDocked()`: guard `state.dock != null` → calls `arcade.play({ id: state.dock.id })`.
+- `quickStart({ id })`: calls `arcade.play({ id })` (bypass dock).
+- `toggleLike({ id })`, `togglePin({ id })`: local toggle & persist.
+- `openComments({ id })`: opens modal bound to `state.comments[id]`.
+- `saveComment({ id, text })`: appends to `state.comments[id]` and persists.
+
+## Lifecycle
+- `mounted` → `fetch: registry` → populates `state.roms`.
+- UI auto-renders feed cards via `forEach`.
+
+## External Contract (Arcade Loader)
+Your runtime must expose:
+```js
+arcade.play = async ({ id }) => {
+  // 1) lookup id in registry (already in state or refetch)
+  // 2) fetch /holotapes/<id>.json
+  // 3) initialize engine canvas & loop (init/update/render)
+  // 4) handle ESC → restore Retro Start Screen scene
+};
 ---
 
 ## 🗺️ Roadmap
