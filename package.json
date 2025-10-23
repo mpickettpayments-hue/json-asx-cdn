@@ -1,1 +1,47 @@
-{ "name": "json-asx-cdn" }
+{
+  "name": "json-asx-language-support",
+  "displayName": "ASX Script Highlighting",
+  "description": "Syntax highlighting and language support for ASX (Advanced Scripting Language) \u2013 the scripting layer for XJSON.APP.",
+  "version": "0.1.0",
+  "publisher": "json-asx",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.50.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "asx",
+        "aliases": [
+          "ASX",
+          "asx"
+        ],
+        "extensions": [
+          ".asx"
+        ],
+        "configuration": "./syntaxes/asx.language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "asx",
+        "scopeName": "source.asx",
+        "path": "./grammars/asx.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "asx",
+        "path": "./snippets/asx.json"
+      }
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/json-asx-language-support"
+  },
+  "icon": "assets/icons/icon.png"
+}

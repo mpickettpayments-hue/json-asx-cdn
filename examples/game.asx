@@ -1,0 +1,67 @@
+// ASX Example – Space Shooter (VDOM-driven)
+
+const GAME_WIDTH = asx.dom.width();
+const GAME_HEIGHT = asx.dom.height();
+
+let state = {
+  player: { x: GAME_WIDTH / 2, y: GAME_HEIGHT - 60 },
+  enemies: [],
+  projectiles: []
+};
+
+// Input handlers
+onInput("move", (dx, dy) => {
+  state.player.x = Math.max(0, Math.min(GAME_WIDTH - 40, state.player.x + dx));
+  state.player.y = Math.max(0, Math.min(GAME_HEIGHT - 40, state.player.y + dy));
+});
+
+onInput("shoot", () => {
+  state.projectiles.push({ x: state.player.x + 18, y: state.player.y - 10, vy: -7 });
+});
+
+// Main loop
+onTick(() => {
+  // Move projectiles
+  state.projectiles.forEach(p => (p.y += p.vy));
+  state.projectiles = state.projectiles.filter(p => p.y > -20);
+
+  // Spawn / move enemies
+  if (state.enemies.length < 5) {
+    const e = AI.generateEnemy("easy"); // ASX runtime supplies this
+    const enemy = {
+      x: e.x ?? Math.random() * (GAME_WIDTH - 30),
+      y: e.y ?? -40,
+      vy: e.vy ?? 1.2
+    };
+    state.enemies.push(enemy);
+  }
+  state.enemies.forEach(e => (e.y += e.vy));
+  state.enemies = state.enemies.filter(e => e.y < GAME_HEIGHT + 40);
+
+  // TODO: collisions
+
+  render(state);
+});
+
+function render(s) {
+  const vdom = asx.vdom.h("div", { id: "game-container" }, [
+    asx.vdom.h("div", {
+      class: "ship",
+      style: `left:${s.player.x}px;top:${s.player.y}px;width:40px;height:40px;position:absolute;background:#fff;`
+    }),
+    ...s.enemies.map(e =>
+      asx.vdom.h("div", {
+        class: "enemy",
+        style: `left:${e.x}px;top:${e.y}px;width:30px;height:30px;position:absolute;background:#f33;`
+      })
+    ),
+    ...s.projectiles.map(p =>
+      asx.vdom.h("div", {
+        class: "projectile",
+        style: `left:${p.x}px;top:${p.y}px;width:5px;height:15px;position:absolute;background:#ff0;`
+      })
+    )
+  ]);
+
+  asx.vdom.patch(vdom);
+}

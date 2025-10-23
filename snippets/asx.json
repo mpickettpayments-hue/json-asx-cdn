@@ -1,0 +1,31 @@
+{
+  "onTick handler": {
+    "prefix": "ontick",
+    "body": [
+      "onTick(() => {",
+      "  // update logic",
+      "  render(state);",
+      "});"
+    ],
+    "description": "Create an ASX onTick loop"
+  },
+  "onInput handler": {
+    "prefix": "oninput",
+    "body": [
+      "onInput(\"${1:event}\", (${2:params}) => {",
+      "  // handle input",
+      "});"
+    ],
+    "description": "Create an ASX onInput event handler"
+  },
+  "render function": {
+    "prefix": "render",
+    "body": [
+      "function render(state) {",
+      "  const vdom = asx.vdom.h(\"div\", { id: \"game-container\" }, []);",
+      "  asx.vdom.patch(vdom);",
+      "}"
+    ],
+    "description": "Basic ASX render function"
+  }
+}

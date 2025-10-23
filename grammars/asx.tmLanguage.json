@@ -1,0 +1,229 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "ASX (Advanced Scripting Language)",
+  "scopeName": "source.asx",
+  "fileTypes": [
+    "asx"
+  ],
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#strings"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#operators"
+    },
+    {
+      "include": "#engine-builtins"
+    },
+    {
+      "include": "#constants"
+    },
+    {
+      "include": "#functions"
+    },
+    {
+      "include": "#punctuation"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.asx",
+          "match": "//.*$"
+        },
+        {
+          "name": "comment.block.asx",
+          "begin": "/\\*",
+          "end": "\\*/",
+          "patterns": [
+            {
+              "include": "#comments"
+            }
+          ]
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.asx",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.asx",
+              "match": "\\\\."
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.single.asx",
+          "begin": "'",
+          "end": "'",
+          "patterns": [
+            {
+              "name": "constant.character.escape.asx",
+              "match": "\\\\."
+            }
+          ]
+        },
+        {
+          "name": "string.template.asx",
+          "begin": "`",
+          "end": "`",
+          "patterns": [
+            {
+              "name": "interpolation.asx",
+              "begin": "\\$\\{",
+              "end": "\\}",
+              "patterns": [
+                {
+                  "include": "$self"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.asx",
+          "match": "\\b0x[0-9a-fA-F]+\\b"
+        },
+        {
+          "name": "constant.numeric.float.asx",
+          "match": "\\b\\d+\\.\\d+(e[+-]?\\d+)?\\b"
+        },
+        {
+          "name": "constant.numeric.integer.asx",
+          "match": "\\b\\d+\\b"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.asx",
+          "match": "\\b(if|else|for|while|do|break|continue|return|switch|case|default)\\b"
+        },
+        {
+          "name": "storage.type.asx",
+          "match": "\\b(const|let|var|function|class|extends|async|await|new)\\b"
+        },
+        {
+          "name": "support.keyword.events.asx",
+          "match": "\\b(onTick|onInput|onInit|onSpawn|onDestroy|onCollide)\\b"
+        }
+      ]
+    },
+    "operators": {
+      "patterns": [
+        {
+          "name": "keyword.operator.arithmetic.asx",
+          "match": "[+\\-*/%]"
+        },
+        {
+          "name": "keyword.operator.assignment.asx",
+          "match": "=|\\+=|\\-=|\\*=|/=|%=|\\*\\*="
+        },
+        {
+          "name": "keyword.operator.comparison.asx",
+          "match": "==|!=|===|!==|<=|>=|<|>"
+        },
+        {
+          "name": "keyword.operator.logical.asx",
+          "match": "!|&&|\\|\\|"
+        }
+      ]
+    },
+    "engine-builtins": {
+      "patterns": [
+        {
+          "name": "support.class.asx",
+          "match": "\\b(asx|AI)\\b"
+        },
+        {
+          "name": "support.variable.property.asx",
+          "match": "\\b(asx\\.(dom|vdom)|AI\\.[A-Za-z_][A-Za-z0-9_]*)\\b"
+        },
+        {
+          "name": "support.function.asx",
+          "match": "\\b(vdom\\.(h|patch)|dom\\.(width|height))\\b"
+        },
+        {
+          "name": "variable.language.state.asx",
+          "match": "\\bstate\\b"
+        }
+      ]
+    },
+    "constants": {
+      "patterns": [
+        {
+          "name": "constant.language.boolean.asx",
+          "match": "\\b(true|false)\\b"
+        },
+        {
+          "name": "constant.language.null.asx",
+          "match": "\\b(null|undefined)\\b"
+        }
+      ]
+    },
+    "functions": {
+      "patterns": [
+        {
+          "name": "entity.name.function.asx",
+          "match": "\\b([A-Za-z_][A-Za-z0-9_]*)\\s*(?=\\()"
+        }
+      ]
+    },
+    "punctuation": {
+      "patterns": [
+        {
+          "name": "punctuation.separator.comma.asx",
+          "match": ","
+        },
+        {
+          "name": "punctuation.terminator.statement.asx",
+          "match": ";"
+        },
+        {
+          "name": "punctuation.definition.parameters.begin.asx",
+          "match": "\\("
+        },
+        {
+          "name": "punctuation.definition.parameters.end.asx",
+          "match": "\\)"
+        },
+        {
+          "name": "punctuation.section.block.begin.asx",
+          "match": "\\{"
+        },
+        {
+          "name": "punctuation.section.block.end.asx",
+          "match": "\\}"
+        },
+        {
+          "name": "punctuation.definition.array.begin.asx",
+          "match": "\\["
+        },
+        {
+          "name": "punctuation.definition.array.end.asx",
+          "match": "\\]"
+        }
+      ]
+    }
+  },
+  "uuid": "f1f3b1a2-6b1a-4c1b-9a21-1b2e0a9f0aa0"
+}
