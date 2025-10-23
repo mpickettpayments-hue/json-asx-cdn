@@ -780,6 +780,25 @@ Click **Save** → preview updates instantly.
 Click **Publish** → deploys to your subdomain.
 
 ---
+# Retro Start Screen — Notes for Builders & Bots
+
+## Visual DNA
+- **BG-B**: Pure black glass, particle glow.
+- Neon green primary `#00ff6a`, cyan accent `#00f0ff`.
+- Cards use subtle glass gradients + 1px borders.
+- Buttons: bordered neon, not filled; hover → glow.
+- Feed = **single-column micro-blog**; each entry = holotape card.
+
+## Behavior
+- Top **Docking Station** shows "HOLOTAPE READY" when a ROM is docked; otherwise "LOAD HOLOTAPE".
+- **INSERT** button docks the *selected* ROM.
+- **START** button only active when docked.
+- Feed actions: **DOCK**, **PLAY**, **Like**, **Pin**, **Comments**.
+
+## Data
+- Loads `./os/arcade-registry.json` → expects:
+  ```json
+  { "roms": [ { "id": "surf-bros", "title": "Surf Bros", "thumb": "...", "desc": "...", "file": "/holotapes/surf-bros.json" } ] }
 
 ## 🤖 AI Builder
 
